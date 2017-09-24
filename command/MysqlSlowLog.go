@@ -11,7 +11,6 @@ type MysqlSlowLog struct {
 	Options MysqlCommonOptions `group:"common"`
 	QueryTime int              `long:"querytime"    description:"Slow query time (seconds)"  default:"10"`
 	QueryWithoutIndex bool     `long:"no-index"     description:"Log queries using NO index"`
-	// Define any options here as you would normally do for flags
 }
 
 func (conf *MysqlSlowLog) Execute(args []string) error {

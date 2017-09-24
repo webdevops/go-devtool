@@ -9,7 +9,6 @@ import (
 
 type MysqlDebug struct {
 	Options MysqlCommonOptions `group:"common"`
-	// Define any options here as you would normally do for flags
 }
 
 func (conf *MysqlDebug) Execute(args []string) error {
