@@ -37,6 +37,7 @@ func createArgparser() {
 	argparser = flags.NewParser(&opts, flags.Default)
 	argparser.AddCommand("mysql:debug", "MySQl debug", "Show MySQL query log", &command.MysqlDebug{});
 	argparser.AddCommand("mysql:slowlog", "MySQl slow query log", "Show MySQL slow query log", &command.MysqlSlowLog{});
+	argparser.AddCommand("mysql:convert", "MySQl convert schema charset/collation", "Convert a schema to a charset and collation", &command.MysqlConvert{});
 
 	args, err = argparser.Parse()
 

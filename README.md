@@ -16,6 +16,7 @@ Features
 MySQL:
 - Show query log for local, remote and docker MySQL installations
 - Show slow log for local, remote and docker MySQL installations
+- Convert MySQL Schema and tables to specific charset and collation
 
 
 Help
@@ -23,7 +24,7 @@ Help
 
 ```
 Usage:
-  main [OPTIONS] <mysql:debug | mysql:slowlog>
+  main [OPTIONS] <mysql:convert | mysql:debug | mysql:slowlog>
 
 Application Options:
   -v, --verbose      verbose mode
@@ -35,6 +36,8 @@ Help Options:
   -h, --help         Show this help message
 
 Available commands:
+  mysql:convert  MySQl convert schema charset/collation
   mysql:debug    MySQl debug
   mysql:slowlog  MySQl slow query log
+
 ```

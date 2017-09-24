@@ -5,6 +5,7 @@ import (
 	"strings"
 	"github.com/webdevops/go-shell"
 	"github.com/webdevops/go-shell/commandbuilder"
+	"fmt"
 )
 
 type MysqlCommonOptions struct {
@@ -15,6 +16,14 @@ type MysqlCommonOptions struct {
 	SSH      string `          long:"ssh"`
 
 	connection commandbuilder.Connection
+}
+
+func mysqlQuote(value string) string {
+	return "'" + strings.Replace(value, "'", "\\'", -1) + "'"
+}
+
+func mysqlIdentifier(value string) string {
+	return "`" + strings.Replace(value, "`", "\\`", -1) + "`"
 }
 
 func  (conf *MysqlCommonOptions) Init() {
@@ -28,7 +37,7 @@ func  (conf *MysqlCommonOptions) Init() {
 	}
 }
 
-func  (conf *MysqlCommonOptions) ExecMySqlStatement(statement string) {
+func  (conf *MysqlCommonOptions) ExecMySqlStatement(statement string) string {
 	args := []string{"-N", "-B"}
 
 	if conf.Hostname != "" {
@@ -46,8 +55,24 @@ func  (conf *MysqlCommonOptions) ExecMySqlStatement(statement string) {
 	args = append(args, "-e", shell.Quote(statement))
 
 	cmd := shell.Cmd(conf.connection.CommandBuilder("mysql", args...)...)
-	cmd.Run()
+	return cmd.Run().Stdout.String()
 }
+
+func  (conf *MysqlCommonOptions) GetTableList (schema string) []string {
+	var ret []string
+
+	output := conf.ExecMySqlStatement(fmt.Sprintf("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %s", mysqlQuote(schema)))
+
+	scanner := bufio.NewScanner(strings.NewReader(output))
+	for scanner.Scan() {
+		line := scanner.Text()
+		ret = append(ret, line)
+	}
+
+	return ret
+}
+
+
 
 func  (conf *MysqlCommonOptions) InitDockerSettings() {
 	containerName := conf.connection.Docker
