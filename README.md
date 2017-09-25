@@ -14,8 +14,9 @@ Features
 ========
 
 MySQL:
-- Show query log for local, remote and docker MySQL installations
-- Show slow log for local, remote and docker MySQL installations
+- Connection to local, remote (`--ssh user@example.com`) and dockerized (`--docker containerid` or `--docker compose:mysql`) MySQL installations supported
+- Show query log
+- Show slow log
 - Convert MySQL Schema and tables to specific charset and collation
 - Backup MySQL Schema to file with automatic compression
 - Restore MySQL Schema to file with automatic decompression
