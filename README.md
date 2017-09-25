@@ -17,7 +17,8 @@ MySQL:
 - Show query log for local, remote and docker MySQL installations
 - Show slow log for local, remote and docker MySQL installations
 - Convert MySQL Schema and tables to specific charset and collation
-
+- Backup MySQL Schema to file with automatic compression
+- Restore MySQL Schema to file with automatic decompression
 
 Help
 ====
@@ -27,13 +28,10 @@ Usage:
   main [OPTIONS] <command>
 
 Application Options:
-  -v, --verbose      verbose mode
-  -V, --version      show version and exit
-      --dumpversion  show only version number and exit
-      --help         show this help message
+  -v, --verbose  verbose mode
 
 Help Options:
-  -h, --help         Show this help message
+  -h, --help     Show this help message
 
 Available commands:
   mysql:backup   MySQl dump schema
@@ -41,5 +39,6 @@ Available commands:
   mysql:debug    MySQl debug
   mysql:restore  MySQl restore schema
   mysql:slowlog  MySQl slow query log
+  version        MySQl dump schema
 
 ```

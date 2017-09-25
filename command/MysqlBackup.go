@@ -14,6 +14,7 @@ type MysqlBackup struct {
 }
 
 func (conf *MysqlBackup) Execute(args []string) error {
+	fmt.Println(fmt.Sprintf("Dumping MySQL schema \"%s\" to \"%s\"", conf.Positional.Schema, conf.Positional.Filename))
 	conf.Options.Init()
 
 	defer NewSigIntHandler(func() {

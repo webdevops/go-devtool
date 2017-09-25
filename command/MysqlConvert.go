@@ -6,23 +6,25 @@ import (
 
 type MysqlConvert struct {
 	Options MysqlCommonOptions `group:"common"`
-	Schema    string           `long:"schema"       description:"Database/Schema to convert"  required:"true"`
+	Positional struct {
+		Schema string `description:"Schema" required:"true"`
+	} `positional-args:"true"`
 	Charset   string           `long:"charset"      description:"MySQL charset"               default:"utf8"`
 	Collation string           `long:"collation"    description:"MySQL collation"             default:"utf8_general_ci"`
 }
 
 func (conf *MysqlConvert) Execute(args []string) error {
-
+	fmt.Println(fmt.Sprintf("Converting MySQL schema \"%s\" to charset \"%s\" and collation \"%s\"", conf.Positional.Schema, conf.Charset, conf.Collation))
 	conf.Options.Init()
 
 	defer NewSigIntHandler(func() {
 	})()
 
 	// Convert database
-	fmt.Println(fmt.Sprintf(" - converting schema \"%s\"", conf.Schema))
+	fmt.Println(fmt.Sprintf(" - converting schema \"%s\"", conf.Positional.Schema))
 	statement := fmt.Sprintf(
 		"SET FOREIGN_KEY_CHECKS=0; ALTER DATABASE %s CHARACTER SET %s COLLATE %s",
-		mysqlIdentifier(conf.Schema),
+		mysqlIdentifier(conf.Positional.Schema),
 		conf.Charset,
 		conf.Collation,
 	)
@@ -30,12 +32,12 @@ func (conf *MysqlConvert) Execute(args []string) error {
 
 
 	// Convert tables
-	tableList := conf.Options.GetTableList(conf.Schema)
+	tableList := conf.Options.GetTableList(conf.Positional.Schema)
 	for _, table := range tableList {
 		fmt.Println(fmt.Sprintf(" - converting table \"%s\"", table))
 		statement := fmt.Sprintf(
 			"SET FOREIGN_KEY_CHECKS=0; ALTER TABLE %s.%s CONVERT TO CHARACTER SET %s COLLATE %s",
-			mysqlIdentifier(conf.Schema),
+			mysqlIdentifier(conf.Positional.Schema),
 			mysqlIdentifier(table),
 			conf.Charset,
 			conf.Collation,

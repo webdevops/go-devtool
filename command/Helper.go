@@ -3,7 +3,6 @@ package command
 import (
 	"os"
 	"os/signal"
-	"github.com/webdevops/go-shell"
 	"fmt"
 	"path/filepath"
 )
@@ -15,7 +14,6 @@ func NewSigIntHandler(callback func()) func() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		<-c
-		shell.Panic = false
 		isSigintExit = true
 		fmt.Println("Starting termination as requested by user...")
 	}()

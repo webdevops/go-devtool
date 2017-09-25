@@ -30,6 +30,7 @@ func mysqlIdentifier(value string) string {
 func  (conf *MysqlCommonOptions) Init() {
 	if conf.SSH != "" {
 		conf.connection.Hostname = conf.SSH
+		fmt.Println(fmt.Sprintf(" - Using ssh connection \"%s\"", conf.SSH))
 	}
 
 	if conf.Docker != "" {
@@ -151,6 +152,7 @@ func  (conf *MysqlCommonOptions) InitDockerSettings() {
 	connectionClone.Type  = "auto"
 
 	containerId := connectionClone.DockerGetContainerId(containerName)
+	fmt.Println(fmt.Sprintf(" - Using docker container \"%s\"", containerId))
 
 	cmd := shell.Cmd(connectionClone.CommandBuilder("docker", "inspect",  "-f", shell.Quote("{{range .Config.Env}}{{println .}}{{end}}"), shell.Quote(containerId))...)
 	envList := cmd.Run().Stdout.String()

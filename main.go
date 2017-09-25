@@ -8,6 +8,7 @@ import (
 	"github.com/webdevops/go-shell"
 	"./logger"
 	"./command"
+	"os/signal"
 )
 
 const (
@@ -23,18 +24,44 @@ var (
 )
 
 var opts struct {
-	Verbose            []bool   `short:"v"  long:"verbose"      description:"verbose mode"`
-	ShowVersion        bool     `short:"V"  long:"version"      description:"show version and exit"`
-	ShowOnlyVersion    bool     `           long:"dumpversion"  description:"show only version number and exit"`
-	ShowHelp           bool     `           long:"help"         description:"show this help message"`
+	Verbose  []bool   `short:"v"  long:"verbose"      description:"verbose mode"`
 }
+
 func createArgparser() {
 	var err error
-	shell.VerboseFunc = func(c *shell.Command) {
-		fmt.Println(c.ToString())
-	}
 
 	argparser = flags.NewParser(&opts, flags.Default)
+	argparser.CommandHandler = func(command flags.Commander, args []string) error {
+		switch {
+		case len(opts.Verbose) >= 2:
+			shell.Trace = true
+			shell.TracePrefix = "[CMD] "
+			Logger = logger.GetInstance(argparser.Command.Name, log.Ldate|log.Ltime|log.Lshortfile)
+			fallthrough
+		case len(opts.Verbose) >= 1:
+			logger.Verbose = true
+			shell.VerboseFunc = func(c *shell.Command) {
+				Logger.Command(c.ToString())
+			}
+			fallthrough
+		default:
+			if Logger == nil {
+				Logger = logger.GetInstance(argparser.Command.Name, 0)
+			}
+		}
+
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		go func() {
+			<-c
+
+			// disable panic on SIGINT/SIGTERM
+			shell.Panic = false
+		}()
+
+		return command.Execute(args)
+	}
+	argparser.AddCommand("version", "MySQl dump schema", "Backup MySQL schema to file", &command.Version{Name:Name, Version:Version, Author:Author});
 	argparser.AddCommand("mysql:backup", "MySQl dump schema", "Backup MySQL schema to file", &command.MysqlBackup{});
 	argparser.AddCommand("mysql:restore", "MySQl restore schema", "Restore MySQL schema from file", &command.MysqlRestore{});
 	argparser.AddCommand("mysql:debug", "MySQl debug", "Show MySQL query log", &command.MysqlDebug{});
@@ -53,41 +80,9 @@ func createArgparser() {
 			os.Exit(1)
 		}
 	}
-
-	// --dumpversion
-	if opts.ShowOnlyVersion {
-		fmt.Println(Version)
-		os.Exit(0)
-	}
-
-	// --version
-	if opts.ShowVersion {
-		fmt.Println(fmt.Sprintf("%s version %s", Name, Version))
-		fmt.Println(fmt.Sprintf("Copyright (C) 2017 %s", Author))
-		os.Exit(0)
-	}
 }
 
 func main() {
 	createArgparser()
-
-	switch {
-	case len(opts.Verbose) >= 2:
-		shell.Trace = true
-		shell.TracePrefix = "[CMD] "
-		Logger = logger.GetInstance(argparser.Command.Name, log.Ldate|log.Ltime|log.Lshortfile)
-		fallthrough
-	case len(opts.Verbose) >= 1:
-		logger.Verbose = true
-		shell.VerboseFunc = func(c *shell.Command) {
-			Logger.Command(c.ToString())
-		}
-		fallthrough
-	default:
-		if Logger == nil {
-			Logger = logger.GetInstance(argparser.Command.Name, 0)
-		}
-	}
-
 	os.Exit(0)
 }

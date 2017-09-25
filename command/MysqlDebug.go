@@ -12,6 +12,7 @@ type MysqlDebug struct {
 }
 
 func (conf *MysqlDebug) Execute(args []string) error {
+	fmt.Println("Starting MySQL query log")
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	logfile := fmt.Sprintf("/tmp/mysql.debug.%d.log", r.Int63());

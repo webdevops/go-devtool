@@ -14,6 +14,7 @@ type MysqlSlowLog struct {
 }
 
 func (conf *MysqlSlowLog) Execute(args []string) error {
+	fmt.Println("Starting MySQL slow log")
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	logfile := fmt.Sprintf("/tmp/mysql.debug.%d.log", r.Int63());

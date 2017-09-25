@@ -14,6 +14,8 @@ type MysqlRestore struct {
 }
 
 func (conf *MysqlRestore) Execute(args []string) error {
+	fmt.Println(fmt.Sprintf("Restoring MySQL dump \"%s\" to schema \"%s\"", conf.Positional.Filename, conf.Positional.Schema))
+
 	conf.Options.Init()
 
 	defer NewSigIntHandler(func() {
