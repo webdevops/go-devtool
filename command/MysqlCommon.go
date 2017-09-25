@@ -37,24 +37,50 @@ func  (conf *MysqlCommonOptions) Init() {
 	}
 }
 
-func  (conf *MysqlCommonOptions) ExecMySqlStatement(statement string) string {
-	args := []string{"-N", "-B"}
+func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{} {
+	mysqlArgs := []string{"-N", "-B"}
 
 	if conf.Hostname != "" {
-		args = append(args, shell.Quote("-h" + conf.Hostname))
+		mysqlArgs = append(mysqlArgs, shell.Quote("-h" + conf.Hostname))
 	}
 
 	if conf.Username != "" {
-		args = append(args, shell.Quote("-u" + conf.Username))
+		mysqlArgs = append(mysqlArgs, shell.Quote("-u" + conf.Username))
 	}
 
 	if conf.Password != "" {
-		args = append(args, shell.Quote("-p" + conf.Password))
+		mysqlArgs = append(mysqlArgs, shell.Quote("-p" + conf.Password))
 	}
 
-	args = append(args, "-e", shell.Quote(statement))
+	if len(args) > 0 {
+		mysqlArgs = append(mysqlArgs, args...)
+	}
 
-	cmd := shell.Cmd(conf.connection.CommandBuilder("mysql", args...)...)
+	return conf.connection.CommandBuilder("mysql", mysqlArgs...)
+}
+
+func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(schema string) []interface{} {
+	mysqlArgs := []string{}
+
+	if conf.Hostname != "" {
+		mysqlArgs = append(mysqlArgs, shell.Quote("-h" + conf.Hostname))
+	}
+
+	if conf.Username != "" {
+		mysqlArgs = append(mysqlArgs, shell.Quote("-u" + conf.Username))
+	}
+
+	if conf.Password != "" {
+		mysqlArgs = append(mysqlArgs, shell.Quote("-p" + conf.Password))
+	}
+
+	mysqlArgs = append(mysqlArgs, shell.Quote(schema))
+	return conf.connection.CommandBuilder("mysqldump", mysqlArgs...)
+}
+
+
+func (conf *MysqlCommonOptions) ExecMySqlStatement(statement string) string {
+	cmd := shell.Cmd(conf.MysqlCommandBuilder("-e", shell.Quote(statement))...)
 	return cmd.Run().Stdout.String()
 }
 
