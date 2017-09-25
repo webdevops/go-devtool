@@ -24,7 +24,7 @@ Help
 
 ```
 Usage:
-  main [OPTIONS] <mysql:convert | mysql:debug | mysql:slowlog>
+  main [OPTIONS] <command>
 
 Application Options:
   -v, --verbose      verbose mode
@@ -36,8 +36,10 @@ Help Options:
   -h, --help         Show this help message
 
 Available commands:
+  mysql:backup   MySQl dump schema
   mysql:convert  MySQl convert schema charset/collation
   mysql:debug    MySQl debug
+  mysql:restore  MySQl restore schema
   mysql:slowlog  MySQl slow query log
 
 ```
