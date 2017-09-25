@@ -60,7 +60,7 @@ func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{
 }
 
 func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(schema string) []interface{} {
-	mysqlArgs := []string{}
+	mysqlArgs := []string{"--single-transaction"}
 
 	if conf.Hostname != "" {
 		mysqlArgs = append(mysqlArgs, shell.Quote("-h" + conf.Hostname))
