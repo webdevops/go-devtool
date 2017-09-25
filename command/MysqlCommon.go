@@ -16,6 +16,7 @@ type MysqlCommonOptions struct {
 	SSH      string `          long:"ssh"`
 
 	connection commandbuilder.Connection
+	dumpCompression string
 }
 
 func mysqlQuote(value string) string {
@@ -38,46 +39,88 @@ func  (conf *MysqlCommonOptions) Init() {
 }
 
 func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{} {
-	mysqlArgs := []string{"-N", "-B"}
+	cmd := []string{"-N", "-B"}
 
 	if conf.Hostname != "" {
-		mysqlArgs = append(mysqlArgs, shell.Quote("-h" + conf.Hostname))
+		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
 	}
 
 	if conf.Username != "" {
-		mysqlArgs = append(mysqlArgs, shell.Quote("-u" + conf.Username))
+		cmd = append(cmd, shell.Quote("-u" + conf.Username))
 	}
 
 	if conf.Password != "" {
-		mysqlArgs = append(mysqlArgs, shell.Quote("-p" + conf.Password))
+		cmd = append(cmd, shell.Quote("-p" + conf.Password))
 	}
 
 	if len(args) > 0 {
-		mysqlArgs = append(mysqlArgs, args...)
+		cmd = append(cmd, args...)
 	}
 
-	return conf.connection.CommandBuilder("mysql", mysqlArgs...)
+	return conf.connection.CommandBuilder("mysql", cmd...)
 }
 
 func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(schema string) []interface{} {
-	mysqlArgs := []string{"--single-transaction"}
+	cmd := []string{"mysqldump", "--single-transaction"}
 
 	if conf.Hostname != "" {
-		mysqlArgs = append(mysqlArgs, shell.Quote("-h" + conf.Hostname))
+		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
 	}
 
 	if conf.Username != "" {
-		mysqlArgs = append(mysqlArgs, shell.Quote("-u" + conf.Username))
+		cmd = append(cmd, shell.Quote("-u" + conf.Username))
 	}
 
 	if conf.Password != "" {
-		mysqlArgs = append(mysqlArgs, shell.Quote("-p" + conf.Password))
+		cmd = append(cmd, shell.Quote("-p" + conf.Password))
 	}
 
-	mysqlArgs = append(mysqlArgs, shell.Quote(schema))
-	return conf.connection.CommandBuilder("mysqldump", mysqlArgs...)
+	cmd = append(cmd, shell.Quote(schema))
+
+	switch conf.dumpCompression {
+	case "gzip":
+		cmd = append(cmd, "| gzip")
+	case "bzip2":
+		cmd = append(cmd, "| bzip2")
+	case "xz":
+		cmd = append(cmd, "| xz --compress --stdout")
+	}
+
+	return conf.connection.RawShellCommandBuilder(cmd...)
 }
 
+func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []interface{} {
+	cmd := []string{}
+
+	switch conf.dumpCompression {
+	case "gzip":
+		cmd = append(cmd, "gzip -dc |")
+	case "bzip2":
+		cmd = append(cmd, "bzcat |")
+	case "xz":
+		cmd = append(cmd, "xzcat |")
+	}
+
+	cmd = append(cmd, "mysql", "-N", "-B")
+
+	if conf.Hostname != "" {
+		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+	}
+
+	if conf.Username != "" {
+		cmd = append(cmd, shell.Quote("-u" + conf.Username))
+	}
+
+	if conf.Password != "" {
+		cmd = append(cmd, shell.Quote("-p" + conf.Password))
+	}
+
+	if len(args) > 0 {
+		cmd = append(cmd, args...)
+	}
+
+	return conf.connection.RawShellCommandBuilder(cmd...)
+}
 
 func (conf *MysqlCommonOptions) ExecMySqlStatement(statement string) string {
 	cmd := shell.Cmd(conf.MysqlCommandBuilder("-e", shell.Quote(statement))...)

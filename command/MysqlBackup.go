@@ -19,6 +19,11 @@ func (conf *MysqlBackup) Execute(args []string) error {
 	defer NewSigIntHandler(func() {
 	})()
 
+	conf.Options.dumpCompression = GetCompressionByFilename(conf.Positional.Filename)
+	if (conf.Options.dumpCompression != "") {
+		fmt.Println(fmt.Sprintf(" - Using %s compression", conf.Options.dumpCompression))
+	}
+
 	cmd := shell.Cmd(conf.Options.MysqlDumpCommandBuilder(conf.Positional.Schema)...).Pipe(fmt.Sprintf("cat > %s", shell.Quote(conf.Positional.Filename)))
 	cmd.Run()
 
