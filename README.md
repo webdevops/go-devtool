@@ -44,16 +44,20 @@ Help Options:
   -h, --help     Show this help message
 
 Available commands:
-  mysql:backup      MySQL dump schema
-  mysql:convert     MySQL convert schema charset/collation
-  mysql:debug       MySQL debug
-  mysql:restore     MySQL restore schema
-  mysql:slowlog     MySQL slow query log
-  postgres:backup   PostgreSQL dump schema
-  postgres:restore  PostgreSQL restore schema
-  typo3:beuser      TYPO3 create BE user
-  typo3:stubs       TYPO3 create file stubs
-  version           MySQL dump schema
+  mysql:backup         MySQL dump schema
+  mysql:backupall      MySQL dump instance
+  mysql:convert        MySQL convert schema charset/collation
+  mysql:debug          MySQL debug
+  mysql:restore        MySQL restore schema
+  mysql:restoreall     MySQL restore instance
+  mysql:slowlog        MySQL slow query log
+  postgres:backup      PostgreSQL dump schema
+  postgres:backupall   PostgreSQL dump instance
+  postgres:restore     PostgreSQL restore schema
+  postgres:restoreall  PostgreSQL restore instance
+  typo3:beuser         TYPO3 create BE user
+  typo3:stubs          TYPO3 create file stubs
+  version              MySQL dump schema
 
 ```
 
