@@ -94,7 +94,7 @@ TYPO3 commands
 --------------
 
 ```bash
-# Create FAL stubs (example files) from existing TYPO3 database
+# Create FAL stubs (example files) from existing TYPO3 database (Docker container is the MySQL container)
 gdt typo3:stubs --docker=081e7bfaada1 typo3 /path/to/typo3/root/
 
 # Inject BE user (user: dev, password: dev) into database
