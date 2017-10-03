@@ -4,7 +4,9 @@ import (
 	"os"
 	"os/signal"
 	"fmt"
+	"time"
 	"path/filepath"
+	"math/rand"
 )
 
 func NewSigIntHandler(callback func()) func() {
@@ -52,4 +54,14 @@ func GetCompressionByFilename(file string) string {
 	}
 
 	return compression
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+func randomString(length int) string {
+	rand.Seed(time.Now().UTC().UnixNano())
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }

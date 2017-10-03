@@ -28,6 +28,7 @@ Postgres:
 
 TYPO3:
 - Create file stubs from existing FAL informations
+- Create TYPO3 backend user
 
 Help
 ====
@@ -50,6 +51,53 @@ Available commands:
   mysql:slowlog     MySQL slow query log
   postgres:backup   PostgreSQL dump schema
   postgres:restore  PostgreSQL restore schema
+  typo3:beuser      TYPO3 create BE user
   typo3:stubs       TYPO3 create file stubs
   version           MySQL dump schema
+
+```
+
+Examples
+========
+
+MySQL commands
+--------------
+
+```bash
+# Dump db1 into db1.sql.gz using local MySQL with user root and password dev
+gdt mysql:backup -u root -p dev db1 db1.sql.gz
+
+# Dump db1 into db1.sql.gz using remote MySQL on host example.com with user root and password dev
+gdt mysql:backup -h example.com -u root -p dev db1 db1.sql.gz
+
+# Dump db1 into db1.sql.gz using docker container 081e7bfaada1
+gdt mysql:backup --docker=081e7bfaada1 db1 db1.sql.gz
+
+# Restore db1 from db1.sql.gz using docker container 081e7bfaada1
+gdt mysql:restore --docker=081e7bfaada1 db1 db1.sql.gz
+
+```
+
+PostgreSQL commands
+-------------------
+
+```bash
+# Dump db1 into db1.sql.gz using docker container 081e7bfaada1
+gdt postgres:backup --docker=081e7bfaada1 db1 db1.sql.gz
+
+# Restore db1 from db1.sql.gz using docker container 081e7bfaada1
+gdt postgres:restore --docker=081e7bfaada1 db1 db1.sql.gz
+
+```
+
+TYPO3 commands
+--------------
+
+```bash
+# Create FAL stubs (example files) from existing TYPO3 database
+gdt typo3:stubs --docker=081e7bfaada1 typo3 /path/to/typo3/root/
+
+# Inject BE user (user: dev, password: dev) into database
+gdt typo3:beuser --docker=081e7bfaada1 typo3 
+
 ```
