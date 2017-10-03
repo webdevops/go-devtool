@@ -5,16 +5,15 @@ import (
 	"github.com/webdevops/go-shell"
 )
 
-type MysqlBackup struct {
+type MysqlDump struct {
 	Options MysqlCommonOptions `group:"common"`
 	Positional struct {
-		Schema string `description:"Schema" required:"1"`
 		Filename string `description:"Backup filename" required:"1"`
 	} `positional-args:"true"`
 }
 
-func (conf *MysqlBackup) Execute(args []string) error {
-	fmt.Println(fmt.Sprintf("Dumping MySQL schema \"%s\" to \"%s\"", conf.Positional.Schema, conf.Positional.Filename))
+func (conf *MysqlDump) Execute(args []string) error {
+	fmt.Println(fmt.Sprintf("Dumping MySQL all schemas to \"%s\"", conf.Positional.Filename))
 	conf.Options.Init()
 
 	defer NewSigIntHandler(func() {
@@ -27,7 +26,7 @@ func (conf *MysqlBackup) Execute(args []string) error {
 		fmt.Println(fmt.Sprintf(" - Using %s compression", conf.Options.dumpCompression))
 	}
 
-	cmd := shell.Cmd(conf.Options.MysqlDumpCommandBuilder(shell.Quote(conf.Positional.Schema))...).Pipe(fmt.Sprintf("cat > %s", shell.Quote(conf.Positional.Filename)))
+	cmd := shell.Cmd(conf.Options.MysqlDumpCommandBuilder("--all-databases")...).Pipe(fmt.Sprintf("cat > %s", shell.Quote(conf.Positional.Filename)))
 	cmd.Run()
 
 	return nil

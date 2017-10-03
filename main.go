@@ -64,19 +64,20 @@ func createArgparser() {
 	}
 	
 	argparser.AddCommand("version", "MySQL dump schema", "Backup MySQL schema to file", &command.Version{Name:Name, Version:Version, Author:Author})
-	
-	argparser.AddCommand("mysql:backup", "MySQL dump schema", "Backup MySQL schema to file", &command.MysqlBackup{})
-	argparser.AddCommand("mysql:backupall", "MySQL dump instance", "Backup MySQL instance (all schemas) to file", &command.MysqlBackupAll{})
-	argparser.AddCommand("mysql:restore", "MySQL restore schema", "Restore MySQL schema from file", &command.MysqlRestore{})
-	argparser.AddCommand("mysql:restoreall", "MySQL restore instance", "Restore MySQL instance (all schemas) from file", &command.MysqlRestoreAll{})
+
 	argparser.AddCommand("mysql:debug", "MySQL debug", "Show MySQL query log", &command.MysqlDebug{})
 	argparser.AddCommand("mysql:slowlog", "MySQL slow query log", "Show MySQL slow query log", &command.MysqlSlowLog{})
-	argparser.AddCommand("mysql:convert", "MySQL convert schema charset/collation", "Convert a schema to a charset and collation", &command.MysqlConvert{})
+	argparser.AddCommand("mysql:dump", "MySQL dump instance", "Backup MySQL instance (all schemas) to file", &command.MysqlDump{})
+	argparser.AddCommand("mysql:restore", "MySQL restore instance", "Restore MySQL instance (all schemas) from file", &command.MysqlRestore{})
 
-	argparser.AddCommand("postgres:backup", "PostgreSQL dump schema", "Backup PostgreSQL schema to file", &command.PostgresBackup{})
-	argparser.AddCommand("postgres:backupall", "PostgreSQL dump instance", "Backup PostgreSQL schema to file", &command.PostgresBackupAll{})
-	argparser.AddCommand("postgres:restore", "PostgreSQL restore schema", "Restore PostgreSQL schema from file", &command.PostgresRestore{})
-	argparser.AddCommand("postgres:restoreall", "PostgreSQL restore instance", "Restore PostgreSQL instance from file", &command.PostgresRestoreAll{})
+	argparser.AddCommand("mysql:schema:dump", "MySQL dump schema", "Backup MySQL schema to file", &command.MysqlSchemaDump{})
+	argparser.AddCommand("mysql:schema:restore", "MySQL restore schema", "Restore MySQL schema from file", &command.MysqlSchemaRestore{})
+	argparser.AddCommand("mysql:schema:convert", "MySQL convert schema charset/collation", "Convert a schema to a charset and collation", &command.MysqlConvert{})
+
+	argparser.AddCommand("postgres:dump", "PostgreSQL dump instance", "Backup PostgreSQL schema to file", &command.PostgresDump{})
+	argparser.AddCommand("postgres:restore", "PostgreSQL restore instance", "Restore PostgreSQL instance from file", &command.PostgresRestore{})
+	argparser.AddCommand("postgres:schema:dump", "PostgreSQL dump schema", "Backup PostgreSQL schema to file", &command.PostgresSchemaDump{})
+	argparser.AddCommand("postgres:schema:restore", "PostgreSQL restore schema", "Restore PostgreSQL schema from file", &command.PostgresSchemaRestore{})
 
 	argparser.AddCommand("typo3:stubs", "TYPO3 create file stubs", "", &command.Typo3Stubs{})
 	argparser.AddCommand("typo3:beuser", "TYPO3 create BE user", "", &command.Typo3BeUser{})

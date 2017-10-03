@@ -5,15 +5,15 @@ import (
 	"github.com/webdevops/go-shell"
 )
 
-type PostgresRestoreAll struct {
+type PostgresDump struct {
 	Options PostgresCommonOptions `group:"common"`
 	Positional struct {
 		Filename string `description:"Backup filename" required:"1"`
 	} `positional-args:"true"`
 }
 
-func (conf *PostgresRestoreAll) Execute(args []string) error {
-	fmt.Println(fmt.Sprintf("Restoring PostgreSQL dump \"%s\"", conf.Positional.Filename))
+func (conf *PostgresDump) Execute(args []string) error {
+	fmt.Println(fmt.Sprintf("Dumping PostgreSQL to \"%s\"", conf.Positional.Filename))
 	conf.Options.Init()
 
 	defer NewSigIntHandler(func() {
@@ -21,10 +21,10 @@ func (conf *PostgresRestoreAll) Execute(args []string) error {
 
 	conf.Options.dumpCompression = GetCompressionByFilename(conf.Positional.Filename)
 	if (conf.Options.dumpCompression != "") {
-		fmt.Println(fmt.Sprintf(" - Using %s decompression", conf.Options.dumpCompression))
+		fmt.Println(fmt.Sprintf(" - Using %s compression", conf.Options.dumpCompression))
 	}
 
-	cmd := shell.Cmd(fmt.Sprintf("cat %s", shell.Quote(conf.Positional.Filename))).Pipe(conf.Options.PostgresRestoreCommandBuilder("postgres")...)
+	cmd := shell.Cmd(conf.Options.PgDumpAllCommandBuilder()...).Pipe(fmt.Sprintf("cat > %s", shell.Quote(conf.Positional.Filename)))
 	cmd.Run()
 
 	return nil
