@@ -5,9 +5,9 @@ GOBUILD = go build -ldflags '-w'
 ALL = \
 	$(foreach arch,64 32,\
 	$(foreach suffix,linux osx,\
-		build/gosync-$(arch)-$(suffix))) \
+		build/gdt-$(arch)-$(suffix))) \
 	$(foreach arch,arm arm64,\
-		build/gosync-$(arch)-linux)
+		build/gdt-$(arch)-linux)
 
 all: test build
 
@@ -24,28 +24,28 @@ clean:
 # os is determined as thus: if variable of suffix exists, it's taken, if not, then
 # suffix itself is taken
 osx = darwin
-build/gosync-64-%: $(SOURCE)
+build/gdt-64-%: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=$(firstword $($*) $*) GOARCH=amd64 $(GOBUILD) -o $@
 
-build/gosync-32-%: $(SOURCE)
+build/gdt-32-%: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=$(firstword $($*) $*) GOARCH=386 $(GOBUILD) -o $@
 
-build/gosync-arm-linux: $(SOURCE)
+build/gdt-arm-linux: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 $(GOBUILD) -o $@
 
-build/gosync-arm64-linux: $(SOURCE)
+build/gdt-arm64-linux: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GOBUILD) -o $@
 
 release: build
-	github-release release -u webdevops -r go-sync -t "$(TAG)" -n "$(TAG)" --description "$(TAG)"
+	github-release release -u webdevops -r go-devtool -t "$(TAG)" -n "$(TAG)" --description "$(TAG)"
 	@for x in $(ALL); do \
 		echo "Uploading $$x" && \
 		github-release upload -u webdevops \
-                              -r go-sync \
+                              -r go-devtool \
                               -t $(TAG) \
                               -f "$$x" \
                               -n "$$(basename $$x)"; \
