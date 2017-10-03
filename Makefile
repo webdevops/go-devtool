@@ -9,7 +9,12 @@ ALL = \
 	$(foreach arch,arm arm64,\
 		build/gdt-$(arch)-linux)
 
-all: test build
+all: dependencies test build
+
+dependencies:
+	go get -u github.com/webdevops/go-shell
+	go get -u github.com/webdevops/go-stubfilegenerator
+	go get -u github.com/tredoe/osutil/user/crypt/md5_crypt
 
 build: clean test $(ALL)
 
