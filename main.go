@@ -73,6 +73,8 @@ func createArgparser() {
 	argparser.AddCommand("postgres:backup", "PostgreSQL dump schema", "Backup PostgreSQL schema to file", &command.PostgresBackup{})
 	argparser.AddCommand("postgres:restore", "PostgreSQL restore schema", "Restore PostgreSQL schema from file", &command.PostgresRestore{})
 
+	argparser.AddCommand("typo3:stubs", "TYPO3 create file stubs", "", &command.Typo3StubFileadmin{})
+
 	args, err = argparser.Parse()
 
 	// check if there is an parse error

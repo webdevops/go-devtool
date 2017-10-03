@@ -20,12 +20,12 @@ func (conf *MysqlDebug) Execute(args []string) error {
 	conf.Options.Init()
 
 	defer NewSigIntHandler(func() {
-		conf.Options.ExecStatement("SET GLOBAL general_log = 'OFF'")
+		conf.Options.ExecStatement("mysql", "SET GLOBAL general_log = 'OFF'")
 		shell.Cmd(conf.Options.connection.CommandBuilder("rm", "-f", logfile)...).Run()
 	})()
 
-	conf.Options.ExecStatement(fmt.Sprintf("SET GLOBAL general_log_file = '%s'", logfile))
-	conf.Options.ExecStatement("SET GLOBAL general_log = 'ON'")
+	conf.Options.ExecStatement("mysql", fmt.Sprintf("SET GLOBAL general_log_file = '%s'", logfile))
+	conf.Options.ExecStatement("mysql", "SET GLOBAL general_log = 'ON'")
 
 	fmt.Println("Starting log tail")
 	fmt.Println("-----------------")

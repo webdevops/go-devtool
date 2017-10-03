@@ -6,6 +6,7 @@ import (
 	"github.com/webdevops/go-shell"
 	"github.com/webdevops/go-shell/commandbuilder"
 	"fmt"
+	"regexp"
 )
 
 type MysqlCommonOptions struct {
@@ -123,15 +124,35 @@ func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []int
 	return conf.connection.RawShellCommandBuilder(cmd...)
 }
 
-func (conf *MysqlCommonOptions) ExecStatement(statement string) string {
-	cmd := shell.Cmd(conf.MysqlCommandBuilder("-e", shell.Quote(statement))...)
+func (conf *MysqlCommonOptions) ExecStatement(database string, statement string) string {
+	cmd := shell.Cmd(conf.MysqlCommandBuilder(shell.Quote(database), "-e", shell.Quote(statement))...)
 	return cmd.Run().Stdout.String()
+}
+
+func (conf *MysqlCommonOptions) ExecQuery(database string, statement string) map[int][]string {
+	ret := map[int][]string{}
+
+	re := regexp.MustCompile("\\n")
+	re.ReplaceAllString(statement, " ")
+
+	cmd := shell.Cmd(conf.MysqlCommandBuilder(shell.Quote(database), "-e", shell.Quote(statement))...)
+	stdout := cmd.Run().Stdout.String()
+
+	resultRegex := regexp.MustCompile("\t+")
+	scanner := bufio.NewScanner(strings.NewReader(stdout))
+	lineNumber := 0
+	for scanner.Scan() {
+		ret[lineNumber] = resultRegex.Split(scanner.Text(), -1)
+		lineNumber++
+	}
+
+	return ret
 }
 
 func  (conf *MysqlCommonOptions) GetTableList (schema string) []string {
 	var ret []string
 
-	output := conf.ExecStatement(fmt.Sprintf("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %s", mysqlQuote(schema)))
+	output := conf.ExecStatement("mysql", fmt.Sprintf("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %s", mysqlQuote(schema)))
 
 	scanner := bufio.NewScanner(strings.NewReader(output))
 	for scanner.Scan() {

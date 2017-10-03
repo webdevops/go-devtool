@@ -21,6 +21,14 @@ MySQL:
 - Backup MySQL Schema to file with automatic compression
 - Restore MySQL Schema to file with automatic decompression
 
+Postgres:
+- Connection to local, remote (`--ssh user@example.com`) and dockerized (`--docker containerid` or `--docker compose:postgres`) PostgreSQL installations supported
+- Backup PostgreSQL Schema to file with automatic compression
+- Restore PostgreSQL Schema to file with automatic decompression
+
+TYPO3:
+- Create file stubs from existing FAL informations
+
 Help
 ====
 
@@ -35,11 +43,13 @@ Help Options:
   -h, --help     Show this help message
 
 Available commands:
-  mysql:backup   MySQl dump schema
-  mysql:convert  MySQl convert schema charset/collation
-  mysql:debug    MySQl debug
-  mysql:restore  MySQl restore schema
-  mysql:slowlog  MySQl slow query log
-  version        MySQl dump schema
-
+  mysql:backup      MySQL dump schema
+  mysql:convert     MySQL convert schema charset/collation
+  mysql:debug       MySQL debug
+  mysql:restore     MySQL restore schema
+  mysql:slowlog     MySQL slow query log
+  postgres:backup   PostgreSQL dump schema
+  postgres:restore  PostgreSQL restore schema
+  typo3:stubs       TYPO3 create file stubs
+  version           MySQL dump schema
 ```
