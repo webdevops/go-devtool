@@ -6,7 +6,7 @@
 [![Github All Releases](https://img.shields.io/github/downloads/webdevops/go-devtool/total.svg)]()
 [![Github Releases](https://img.shields.io/github/downloads/webdevops/go-devtool/latest/total.svg)]()
 
-Easy development tools for MySQL
+Easy development tools for MySQL, PostgreSQL and TYPO3
 
 Successor for [CliTools](https://github.com/webdevops/clitools) written on Golang
 
