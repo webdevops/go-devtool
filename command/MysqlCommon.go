@@ -10,7 +10,8 @@ import (
 )
 
 type MysqlCommonOptions struct {
-	Hostname string `long:"hostname"`
+	Hostname string `          long:"hostname"`
+	Port     string `short:"P" long:"port"`
 	Username string `short:"u" long:"user"`
 	Password string `short:"p" long:"password"`
 	Docker   string `          long:"docker"`
@@ -47,6 +48,10 @@ func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{
 		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
 	}
 
+	if conf.Port != "" {
+		cmd = append(cmd, shell.Quote("-P" + conf.Port))
+	}
+
 	if conf.Username != "" {
 		cmd = append(cmd, shell.Quote("-u" + conf.Username))
 	}
@@ -67,6 +72,10 @@ func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(schema string) []interfa
 
 	if conf.Hostname != "" {
 		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+	}
+
+	if conf.Port != "" {
+		cmd = append(cmd, shell.Quote("-P" + conf.Port))
 	}
 
 	if conf.Username != "" {
@@ -107,6 +116,10 @@ func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []int
 
 	if conf.Hostname != "" {
 		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+	}
+
+	if conf.Port != "" {
+		cmd = append(cmd, shell.Quote("-P" + conf.Port))
 	}
 
 	if conf.Username != "" {
