@@ -4,11 +4,12 @@ import (
 	"os"
 	"log"
 	"fmt"
+	"os/signal"
+	"runtime/debug"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/webdevops/go-shell"
 	"./logger"
 	"./command"
-	"os/signal"
 )
 
 const (
@@ -91,6 +92,19 @@ func createArgparser() {
 }
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println()
+			if len(opts.Verbose) >= 2 {
+				fmt.Println(r)
+				debug.PrintStack()
+			} else {
+				fmt.Println(r)
+			}
+			os.Exit(255)
+		}
+	}()
+
 	createArgparser()
 	os.Exit(0)
 }
