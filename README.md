@@ -68,7 +68,10 @@ MySQL commands
 gdt mysql:backup -u root -p dev db1 db1.sql.gz
 
 # Dump db1 into db1.sql.gz using remote MySQL on host example.com with user root and password dev
-gdt mysql:backup -h example.com -u root -p dev db1 db1.sql.gz
+gdt mysql:backup --hostname example.com -u root -p dev db1 db1.sql.gz
+
+# Dump db1 into db1.sql.gz using remote MySQL with user root and password dev on host example.com using SSH with user foobar 
+gdt mysql:backup --ssh foobar@example.com -u root -p dev db1 db1.sql.gz
 
 # Dump db1 into db1.sql.gz using docker container 081e7bfaada1
 gdt mysql:backup --docker=081e7bfaada1 db1 db1.sql.gz
