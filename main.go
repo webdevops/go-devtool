@@ -66,7 +66,9 @@ func createArgparser() {
 	argparser.AddCommand("version", "MySQL dump schema", "Backup MySQL schema to file", &command.Version{Name:Name, Version:Version, Author:Author})
 	
 	argparser.AddCommand("mysql:backup", "MySQL dump schema", "Backup MySQL schema to file", &command.MysqlBackup{})
+	argparser.AddCommand("mysql:backupall", "MySQL dump instance", "Backup MySQL instance (all schemas) to file", &command.MysqlBackupAll{})
 	argparser.AddCommand("mysql:restore", "MySQL restore schema", "Restore MySQL schema from file", &command.MysqlRestore{})
+	argparser.AddCommand("mysql:restoreall", "MySQL restore instance", "Restore MySQL instance (all schemas) from file", &command.MysqlRestoreAll{})
 	argparser.AddCommand("mysql:debug", "MySQL debug", "Show MySQL query log", &command.MysqlDebug{})
 	argparser.AddCommand("mysql:slowlog", "MySQL slow query log", "Show MySQL slow query log", &command.MysqlSlowLog{})
 	argparser.AddCommand("mysql:convert", "MySQL convert schema charset/collation", "Convert a schema to a charset and collation", &command.MysqlConvert{})

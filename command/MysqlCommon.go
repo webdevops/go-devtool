@@ -67,7 +67,7 @@ func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{
 	return conf.connection.CommandBuilder("mysql", cmd...)
 }
 
-func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(schema string) []interface{} {
+func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(args ...string) []interface{} {
 	cmd := []string{"mysqldump", "--single-transaction"}
 
 	if conf.Hostname != "" {
@@ -86,7 +86,9 @@ func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(schema string) []interfa
 		cmd = append(cmd, shell.Quote("-p" + conf.Password))
 	}
 
-	cmd = append(cmd, shell.Quote(schema))
+	if len(args) > 0 {
+		cmd = append(cmd, args...)
+	}
 
 	switch conf.dumpCompression {
 	case "gzip":
