@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-type Typo3StubFileadmin struct {
+type Typo3Stubs struct {
 	Options MysqlCommonOptions `group:"common"`
 	Positional struct {
 		Schema string `description:"Schema" required:"1"`
@@ -31,7 +31,7 @@ type storageFile struct {
 	ImageHeight string
 }
 
-func (conf *Typo3StubFileadmin) Execute(args []string) error {
+func (conf *Typo3Stubs) Execute(args []string) error {
 	fmt.Println("Starting TYPO3 fileadmin stub generator")
 	conf.Options.Init()
 
@@ -51,7 +51,7 @@ func (conf *Typo3StubFileadmin) Execute(args []string) error {
 	return nil
 }
 
-func (conf *Typo3StubFileadmin) processStorage(storage storage) {
+func (conf *Typo3Stubs) processStorage(storage storage) {
 	stubgen := stubfilegenerator.StubGenerator()
 
 	if conf.Force {
