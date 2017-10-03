@@ -26,8 +26,8 @@ func (conf *MysqlRestore) Execute(args []string) error {
 		fmt.Println(fmt.Sprintf(" - Using %s decompression", conf.Options.dumpCompression))
 	}
 
-	conf.Options.ExecMySqlStatement(fmt.Sprintf("DROP DATABASE IF EXISTS %s", mysqlIdentifier(conf.Positional.Schema)))
-	conf.Options.ExecMySqlStatement(fmt.Sprintf("CREATE DATABASE %s", mysqlIdentifier(conf.Positional.Schema)))
+	conf.Options.ExecStatement(fmt.Sprintf("DROP DATABASE IF EXISTS %s", mysqlIdentifier(conf.Positional.Schema)))
+	conf.Options.ExecStatement(fmt.Sprintf("CREATE DATABASE %s", mysqlIdentifier(conf.Positional.Schema)))
 	cmd := shell.Cmd(fmt.Sprintf("cat %s", shell.Quote(conf.Positional.Filename))).Pipe(conf.Options.MysqlRestoreCommandBuilder(conf.Positional.Schema)...)
 	cmd.Run()
 

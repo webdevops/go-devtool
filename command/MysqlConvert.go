@@ -28,7 +28,7 @@ func (conf *MysqlConvert) Execute(args []string) error {
 		conf.Charset,
 		conf.Collation,
 	)
-	conf.Options.ExecMySqlStatement(statement)
+	conf.Options.ExecStatement(statement)
 
 
 	// Convert tables
@@ -42,7 +42,7 @@ func (conf *MysqlConvert) Execute(args []string) error {
 			conf.Charset,
 			conf.Collation,
 		)
-		conf.Options.ExecMySqlStatement(statement)
+		conf.Options.ExecStatement(statement)
 	}
 
 	return nil

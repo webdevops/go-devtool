@@ -61,12 +61,17 @@ func createArgparser() {
 
 		return command.Execute(args)
 	}
-	argparser.AddCommand("version", "MySQl dump schema", "Backup MySQL schema to file", &command.Version{Name:Name, Version:Version, Author:Author});
-	argparser.AddCommand("mysql:backup", "MySQl dump schema", "Backup MySQL schema to file", &command.MysqlBackup{});
-	argparser.AddCommand("mysql:restore", "MySQl restore schema", "Restore MySQL schema from file", &command.MysqlRestore{});
-	argparser.AddCommand("mysql:debug", "MySQl debug", "Show MySQL query log", &command.MysqlDebug{});
-	argparser.AddCommand("mysql:slowlog", "MySQl slow query log", "Show MySQL slow query log", &command.MysqlSlowLog{});
-	argparser.AddCommand("mysql:convert", "MySQl convert schema charset/collation", "Convert a schema to a charset and collation", &command.MysqlConvert{});
+	
+	argparser.AddCommand("version", "MySQL dump schema", "Backup MySQL schema to file", &command.Version{Name:Name, Version:Version, Author:Author})
+	
+	argparser.AddCommand("mysql:backup", "MySQL dump schema", "Backup MySQL schema to file", &command.MysqlBackup{})
+	argparser.AddCommand("mysql:restore", "MySQL restore schema", "Restore MySQL schema from file", &command.MysqlRestore{})
+	argparser.AddCommand("mysql:debug", "MySQL debug", "Show MySQL query log", &command.MysqlDebug{})
+	argparser.AddCommand("mysql:slowlog", "MySQL slow query log", "Show MySQL slow query log", &command.MysqlSlowLog{})
+	argparser.AddCommand("mysql:convert", "MySQL convert schema charset/collation", "Convert a schema to a charset and collation", &command.MysqlConvert{})
+
+	argparser.AddCommand("postgres:backup", "PostgreSQL dump schema", "Backup PostgreSQL schema to file", &command.PostgresBackup{})
+	argparser.AddCommand("postgres:restore", "PostgreSQL restore schema", "Restore PostgreSQL schema from file", &command.PostgresRestore{})
 
 	args, err = argparser.Parse()
 

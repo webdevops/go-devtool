@@ -22,19 +22,19 @@ func (conf *MysqlSlowLog) Execute(args []string) error {
 	conf.Options.Init()
 
 	defer NewSigIntHandler(func() {
-		conf.Options.ExecMySqlStatement("SET GLOBAL general_log = 'OFF'")
-		conf.Options.ExecMySqlStatement("SET GLOBAL log_queries_not_using_indexes = 'OFF'")
+		conf.Options.ExecStatement("SET GLOBAL general_log = 'OFF'")
+		conf.Options.ExecStatement("SET GLOBAL log_queries_not_using_indexes = 'OFF'")
 		shell.Cmd(conf.Options.connection.CommandBuilder("rm", "-f", logfile)...).Run()
 	})()
 
-	conf.Options.ExecMySqlStatement(fmt.Sprintf("SET GLOBAL slow_query_log_file = '%s'", logfile))
-	conf.Options.ExecMySqlStatement("SET GLOBAL slow_query_log = 'ON'")
-	conf.Options.ExecMySqlStatement(fmt.Sprintf("SET GLOBAL long_query_time = %d", conf.QueryTime))
+	conf.Options.ExecStatement(fmt.Sprintf("SET GLOBAL slow_query_log_file = '%s'", logfile))
+	conf.Options.ExecStatement("SET GLOBAL slow_query_log = 'ON'")
+	conf.Options.ExecStatement(fmt.Sprintf("SET GLOBAL long_query_time = %d", conf.QueryTime))
 
 	if conf.QueryWithoutIndex {
-		conf.Options.ExecMySqlStatement("SET GLOBAL log_queries_not_using_indexes = 'ON'")
+		conf.Options.ExecStatement("SET GLOBAL log_queries_not_using_indexes = 'ON'")
 	} else {
-		conf.Options.ExecMySqlStatement("SET GLOBAL log_queries_not_using_indexes = 'OFF'")
+		conf.Options.ExecStatement("SET GLOBAL log_queries_not_using_indexes = 'OFF'")
 	}
 
 	fmt.Println("Starting log tail")

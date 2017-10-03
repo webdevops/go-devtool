@@ -8,7 +8,7 @@ import (
 	"fmt"
 )
 
-type MysqlCommonOptions struct {
+type PostgresCommonOptions struct {
 	Hostname string `long:"hostname"`
 	Username string `short:"u" long:"user"`
 	Password string `short:"p" long:"password"`
@@ -19,15 +19,15 @@ type MysqlCommonOptions struct {
 	dumpCompression string
 }
 
-func mysqlQuote(value string) string {
+func postgresQuote(value string) string {
 	return "'" + strings.Replace(value, "'", "\\'", -1) + "'"
 }
 
-func mysqlIdentifier(value string) string {
-	return "`" + strings.Replace(value, "`", "\\`", -1) + "`"
+func postgresIdentifier(value string) string {
+	return "\"" + strings.Replace(value, "\"", "\\\"", -1) + "\""
 }
 
-func  (conf *MysqlCommonOptions) Init() {
+func  (conf *PostgresCommonOptions) Init() {
 	if conf.SSH != "" {
 		conf.connection.Hostname = conf.SSH
 		fmt.Println(fmt.Sprintf(" - Using ssh connection \"%s\"", conf.SSH))
@@ -39,41 +39,45 @@ func  (conf *MysqlCommonOptions) Init() {
 	}
 }
 
-func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{} {
-	cmd := []string{"-N", "-B"}
+func (conf *PostgresCommonOptions) PsqlCommandBuilder(args ...string) []interface{} {
+	cmd := []string{}
+
+	if conf.Password != "" {
+		cmd = append(cmd, "PGPASSWORD=" + shell.Quote(conf.Password))
+	}
+
+	cmd = append(cmd, "psql")
 
 	if conf.Hostname != "" {
-		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+		cmd = append(cmd, "-h", shell.Quote(conf.Hostname))
 	}
 
 	if conf.Username != "" {
-		cmd = append(cmd, shell.Quote("-u" + conf.Username))
-	}
-
-	if conf.Password != "" {
-		cmd = append(cmd, shell.Quote("-p" + conf.Password))
+		cmd = append(cmd, "-U", shell.Quote(conf.Username))
 	}
 
 	if len(args) > 0 {
 		cmd = append(cmd, args...)
 	}
 
-	return conf.connection.CommandBuilder("mysql", cmd...)
+	return conf.connection.RawShellCommandBuilder(cmd...)
 }
 
-func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(schema string) []interface{} {
-	cmd := []string{"mysqldump", "--single-transaction"}
+func (conf *PostgresCommonOptions) PgDumpCommandBuilder(schema string) []interface{} {
+	cmd := []string{}
+
+	if conf.Password != "" {
+		cmd = append(cmd, "PGPASSWORD=" + shell.Quote(conf.Password))
+	}
+
+	cmd = append(cmd, "pg_dump")
 
 	if conf.Hostname != "" {
-		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+		cmd = append(cmd, "-h", shell.Quote(conf.Hostname))
 	}
 
 	if conf.Username != "" {
-		cmd = append(cmd, shell.Quote("-u" + conf.Username))
-	}
-
-	if conf.Password != "" {
-		cmd = append(cmd, shell.Quote("-p" + conf.Password))
+		cmd = append(cmd, "-U", shell.Quote(conf.Username))
 	}
 
 	cmd = append(cmd, shell.Quote(schema))
@@ -90,7 +94,7 @@ func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(schema string) []interfa
 	return conf.connection.RawShellCommandBuilder(cmd...)
 }
 
-func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []interface{} {
+func (conf *PostgresCommonOptions) PostgresRestoreCommandBuilder(args ...string) []interface{} {
 	cmd := []string{}
 
 	switch conf.dumpCompression {
@@ -102,18 +106,18 @@ func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []int
 		cmd = append(cmd, "xzcat |")
 	}
 
-	cmd = append(cmd, "mysql", "-N", "-B")
+	if conf.Password != "" {
+		cmd = append(cmd, "PGPASSWORD=" + shell.Quote(conf.Password))
+	}
+
+	cmd = append(cmd, "pg_dump")
 
 	if conf.Hostname != "" {
-		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+		cmd = append(cmd, "-h", shell.Quote(conf.Hostname))
 	}
 
 	if conf.Username != "" {
-		cmd = append(cmd, shell.Quote("-u" + conf.Username))
-	}
-
-	if conf.Password != "" {
-		cmd = append(cmd, shell.Quote("-p" + conf.Password))
+		cmd = append(cmd, "-U", shell.Quote(conf.Username))
 	}
 
 	if len(args) > 0 {
@@ -123,28 +127,12 @@ func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []int
 	return conf.connection.RawShellCommandBuilder(cmd...)
 }
 
-func (conf *MysqlCommonOptions) ExecStatement(statement string) string {
-	cmd := shell.Cmd(conf.MysqlCommandBuilder("-e", shell.Quote(statement))...)
+func (conf *PostgresCommonOptions) ExecStatement(statement string) string {
+	cmd := shell.Cmd(conf.PsqlCommandBuilder("postgres", "-c", shell.Quote(statement))...)
 	return cmd.Run().Stdout.String()
 }
 
-func  (conf *MysqlCommonOptions) GetTableList (schema string) []string {
-	var ret []string
-
-	output := conf.ExecStatement(fmt.Sprintf("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %s", mysqlQuote(schema)))
-
-	scanner := bufio.NewScanner(strings.NewReader(output))
-	for scanner.Scan() {
-		line := scanner.Text()
-		ret = append(ret, line)
-	}
-
-	return ret
-}
-
-
-
-func  (conf *MysqlCommonOptions) InitDockerSettings() {
+func  (conf *PostgresCommonOptions) InitDockerSettings() {
 	containerName := conf.connection.Docker
 
 	connectionClone := conf.connection.Clone()
@@ -164,12 +152,12 @@ func  (conf *MysqlCommonOptions) InitDockerSettings() {
 		if len(split) == 2 {
 			varName, varValue := split[0], split[1]
 
-			if varName == "MYSQL_ROOT_PASSWORD" {
-				if conf.Username == "" && conf.Password == "" {
-					conf.Username = "root"
-					conf.Password = varValue
-					conf.Hostname = ""
-				}
+			if varName == "POSTGRES_USER" {
+				conf.Username = varValue
+			}
+
+			if varName == "POSTGRES_PASSWORD" {
+				conf.Password = varValue
 			}
 		}
 	}
