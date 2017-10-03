@@ -74,7 +74,9 @@ func createArgparser() {
 	argparser.AddCommand("mysql:convert", "MySQL convert schema charset/collation", "Convert a schema to a charset and collation", &command.MysqlConvert{})
 
 	argparser.AddCommand("postgres:backup", "PostgreSQL dump schema", "Backup PostgreSQL schema to file", &command.PostgresBackup{})
+	argparser.AddCommand("postgres:backupall", "PostgreSQL dump instance", "Backup PostgreSQL schema to file", &command.PostgresBackupAll{})
 	argparser.AddCommand("postgres:restore", "PostgreSQL restore schema", "Restore PostgreSQL schema from file", &command.PostgresRestore{})
+	argparser.AddCommand("postgres:restoreall", "PostgreSQL restore instance", "Restore PostgreSQL instance from file", &command.PostgresRestoreAll{})
 
 	argparser.AddCommand("typo3:stubs", "TYPO3 create file stubs", "", &command.Typo3Stubs{})
 	argparser.AddCommand("typo3:beuser", "TYPO3 create BE user", "", &command.Typo3BeUser{})

@@ -94,6 +94,35 @@ func (conf *PostgresCommonOptions) PgDumpCommandBuilder(schema string) []interfa
 	return conf.connection.RawShellCommandBuilder(cmd...)
 }
 
+func (conf *PostgresCommonOptions) PgDumpAllCommandBuilder() []interface{} {
+	cmd := []string{}
+
+	if conf.Password != "" {
+		cmd = append(cmd, "PGPASSWORD=" + shell.Quote(conf.Password))
+	}
+
+	cmd = append(cmd, "pg_dumpall", "-c")
+
+	if conf.Hostname != "" {
+		cmd = append(cmd, "-h", shell.Quote(conf.Hostname))
+	}
+
+	if conf.Username != "" {
+		cmd = append(cmd, "-U", shell.Quote(conf.Username))
+	}
+
+	switch conf.dumpCompression {
+	case "gzip":
+		cmd = append(cmd, "| gzip")
+	case "bzip2":
+		cmd = append(cmd, "| bzip2")
+	case "xz":
+		cmd = append(cmd, "| xz --compress --stdout")
+	}
+
+	return conf.connection.RawShellCommandBuilder(cmd...)
+}
+
 func (conf *PostgresCommonOptions) PostgresRestoreCommandBuilder(args ...string) []interface{} {
 	cmd := []string{}
 
