@@ -152,11 +152,11 @@ func  (conf *PostgresCommonOptions) InitDockerSettings() {
 		if len(split) == 2 {
 			varName, varValue := split[0], split[1]
 
-			if varName == "POSTGRES_USER" {
+			if varName == "POSTGRES_USER" && conf.Username == "" {
 				conf.Username = varValue
 			}
 
-			if varName == "POSTGRES_PASSWORD" {
+			if varName == "POSTGRES_PASSWORD" && conf.Password == ""  {
 				conf.Password = varValue
 			}
 		}

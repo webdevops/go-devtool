@@ -198,12 +198,10 @@ func  (conf *MysqlCommonOptions) InitDockerSettings() {
 		if len(split) == 2 {
 			varName, varValue := split[0], split[1]
 
-			if varName == "MYSQL_ROOT_PASSWORD" {
-				if conf.Username == "" && conf.Password == "" {
-					conf.Username = "root"
-					conf.Password = varValue
-					conf.Hostname = ""
-				}
+			if varName == "MYSQL_ROOT_PASSWORD" && conf.Username == "" && conf.Password == "" {
+				conf.Username = "root"
+				conf.Password = varValue
+				conf.Hostname = ""
 			}
 		}
 	}
