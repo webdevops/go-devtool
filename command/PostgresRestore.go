@@ -19,6 +19,8 @@ func (conf *PostgresRestore) Execute(args []string) error {
 	defer NewSigIntHandler(func() {
 	})()
 
+	shell.SetDefaultShell("bash")
+
 	conf.Options.dumpCompression = GetCompressionByFilename(conf.Positional.Filename)
 	if (conf.Options.dumpCompression != "") {
 		fmt.Println(fmt.Sprintf(" - Using %s decompression", conf.Options.dumpCompression))

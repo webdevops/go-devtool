@@ -20,6 +20,8 @@ func (conf *PostgresSchemaDump) Execute(args []string) error {
 	defer NewSigIntHandler(func() {
 	})()
 
+	shell.SetDefaultShell("bash")
+
 	conf.Options.dumpCompression = GetCompressionByFilename(conf.Positional.Filename)
 	if (conf.Options.dumpCompression != "") {
 		fmt.Println(fmt.Sprintf(" - Using %s compression", conf.Options.dumpCompression))
