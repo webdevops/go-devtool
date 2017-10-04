@@ -7,6 +7,8 @@ import (
 	"github.com/webdevops/go-shell/commandbuilder"
 	"fmt"
 	"regexp"
+	"encoding/xml"
+	"errors"
 )
 
 type MysqlCommonOptions struct {
@@ -20,6 +22,41 @@ type MysqlCommonOptions struct {
 	connection commandbuilder.Connection
 	dumpCompression string
 }
+
+type xmlMysqlQueryResult struct {
+	XMLName xml.Name `xml:"resultset"`
+	Row []xmlMysqlQueryRow `xml:"row"`
+}
+
+type xmlMysqlQueryRow struct {
+	Field []xmlMysqlQueryField `xml:"field"`
+}
+
+type xmlMysqlQueryField struct {
+	Name string `xml:"name,attr"`
+	Value string `xml:",chardata"`
+}
+
+func  (row *xmlMysqlQueryRow) GetList() map[string]string {
+	ret := map[string]string{}
+
+	for _, field := range row.Field {
+		ret[field.Name] = field.Value
+	}
+	
+	return ret
+}
+
+func  (row *xmlMysqlQueryRow) GetField(name string) (string, error) {
+	for _, field := range row.Field {
+		if name == field.Name {
+			return field.Value, nil
+		}
+	}
+
+	return "", errors.New(fmt.Sprintf("Field %s not found", name))
+}
+
 
 func mysqlQuote(value string) string {
 	return "'" + strings.Replace(value, "'", "\\'", -1) + "'"
@@ -42,7 +79,7 @@ func  (conf *MysqlCommonOptions) Init() {
 }
 
 func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{} {
-	cmd := []string{"-N", "-B"}
+	cmd := []string{"-NB"}
 
 	if conf.Hostname != "" {
 		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
@@ -114,7 +151,7 @@ func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []int
 		cmd = append(cmd, "xzcat |")
 	}
 
-	cmd = append(cmd, "mysql", "-N", "-B")
+	cmd = append(cmd, "mysql", "-NB")
 
 	if conf.Hostname != "" {
 		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
@@ -144,24 +181,18 @@ func (conf *MysqlCommonOptions) ExecStatement(database string, statement string)
 	return cmd.Run().Stdout.String()
 }
 
-func (conf *MysqlCommonOptions) ExecQuery(database string, statement string) map[int][]string {
-	ret := map[int][]string{}
-
+func (conf *MysqlCommonOptions) ExecQuery(database string, statement string) xmlMysqlQueryResult {
 	re := regexp.MustCompile("\\n")
 	re.ReplaceAllString(statement, " ")
 
-	cmd := shell.Cmd(conf.MysqlCommandBuilder(shell.Quote(database), "-e", shell.Quote(statement))...)
+	cmd := shell.Cmd(conf.MysqlCommandBuilder(shell.Quote(database), "--xml", "-e", shell.Quote(statement))...)
 	stdout := cmd.Run().Stdout.String()
 
-	resultRegex := regexp.MustCompile("\t+")
-	scanner := bufio.NewScanner(strings.NewReader(stdout))
-	lineNumber := 0
-	for scanner.Scan() {
-		ret[lineNumber] = resultRegex.Split(scanner.Text(), -1)
-		lineNumber++
-	}
+	// parse result as xml
+	var result xmlMysqlQueryResult
+	xml.Unmarshal([]byte(stdout), &result)
 
-	return ret
+	return result
 }
 
 func  (conf *MysqlCommonOptions) GetTableList(schema string) []string {

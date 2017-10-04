@@ -43,8 +43,9 @@ func (conf *Typo3Stubs) Execute(args []string) error {
               AND driver = 'local'`
 	result := conf.Options.ExecQuery(conf.Positional.Schema, sql)
 
-	for _, val := range result {
-		storage := storage{val[0], val[1], val[2]}
+	for _, row := range result.Row {
+		rowList := row.GetList()
+		storage := storage{rowList["uid"], rowList["name"], rowList["storagepath"]}
 		conf.processStorage(storage)
 	}
 
@@ -70,21 +71,21 @@ func (conf *Typo3Stubs) processStorage(storage storage) {
               WHERE f.storage = ` + storage.Uid;
 	result := conf.Options.ExecQuery(conf.Positional.Schema, sql)
 
-	for _, val := range result {
+	for _, row := range result.Row {
+		rowList := row.GetList()
+
 		file := storageFile{}
 		file.ImageWidth = "800"
 		file.ImageHeight = "400"
 
-		switch len(val) {
+		switch len(rowList) {
 		case 4:
-			file.ImageWidth = val[2]
-			file.ImageHeight = val[3]
-			file.Uid = val[0]
-			file.Path = val[1]
+			file.ImageWidth = rowList["meta_width"]
+			file.ImageHeight = rowList["meta_height"]
 			fallthrough
 		case 2:
-			file.Uid = val[0]
-			file.Path = filepath.Join(storage.Path, val[1])
+			file.Uid = rowList["uid"]
+			file.Path = filepath.Join(storage.Path, rowList["identifier"])
 			file.RelPath = filepath.Join(conf.Positional.Typo3Root, file.Path)
 			file.AbsPath, _ = filepath.Abs(file.RelPath)
 		}

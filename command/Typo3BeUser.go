@@ -60,8 +60,9 @@ func (conf *Typo3BeUser) Execute(args []string) error {
 	sql = fmt.Sprintf(sql, mysqlQuote(conf.Username))
 	result := conf.Options.ExecQuery(conf.Positional.Schema, sql)
 
-	if len(result) == 1 {
-		userId = result[0][0]
+	for _, row := range result.Row {
+		rowList := row.GetList()
+		userId = rowList["uid"]
 	}
 
 	sql = `INSERT INTO be_users
