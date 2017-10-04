@@ -39,11 +39,8 @@ func  (conf *PostgresCommonOptions) Init() {
 }
 
 func (conf *PostgresCommonOptions) PsqlCommandBuilder(args ...string) []interface{} {
+	connection := conf.connection.Clone()
 	cmd := []string{}
-
-	if conf.Password != "" {
-		cmd = append(cmd, "PGPASSWORD=" + shell.Quote(conf.Password))
-	}
 
 	cmd = append(cmd, "psql")
 
@@ -55,19 +52,20 @@ func (conf *PostgresCommonOptions) PsqlCommandBuilder(args ...string) []interfac
 		cmd = append(cmd, "-U", shell.Quote(conf.Username))
 	}
 
+	if conf.Password != "" {
+		connection.Environment["PGPASSWORD"] = conf.Password
+	}
+
 	if len(args) > 0 {
 		cmd = append(cmd, args...)
 	}
 
-	return conf.connection.RawShellCommandBuilder(cmd...)
+	return connection.RawShellCommandBuilder(cmd...)
 }
 
 func (conf *PostgresCommonOptions) PgDumpCommandBuilder(schema string) []interface{} {
+	connection := conf.connection.Clone()
 	cmd := []string{}
-
-	if conf.Password != "" {
-		cmd = append(cmd, "PGPASSWORD=" + shell.Quote(conf.Password))
-	}
 
 	cmd = append(cmd, "pg_dump")
 
@@ -77,6 +75,10 @@ func (conf *PostgresCommonOptions) PgDumpCommandBuilder(schema string) []interfa
 
 	if conf.Username != "" {
 		cmd = append(cmd, "-U", shell.Quote(conf.Username))
+	}
+
+	if conf.Password != "" {
+		connection.Environment["PGPASSWORD"] = conf.Password
 	}
 
 	cmd = append(cmd, shell.Quote(schema))
@@ -90,15 +92,12 @@ func (conf *PostgresCommonOptions) PgDumpCommandBuilder(schema string) []interfa
 		cmd = append(cmd, "| xz --compress --stdout")
 	}
 
-	return conf.connection.RawShellCommandBuilder(cmd...)
+	return connection.RawShellCommandBuilder(cmd...)
 }
 
 func (conf *PostgresCommonOptions) PgDumpAllCommandBuilder() []interface{} {
+	connection := conf.connection.Clone()
 	cmd := []string{}
-
-	if conf.Password != "" {
-		cmd = append(cmd, "PGPASSWORD=" + shell.Quote(conf.Password))
-	}
 
 	cmd = append(cmd, "pg_dumpall", "-c")
 
@@ -110,6 +109,10 @@ func (conf *PostgresCommonOptions) PgDumpAllCommandBuilder() []interface{} {
 		cmd = append(cmd, "-U", shell.Quote(conf.Username))
 	}
 
+	if conf.Password != "" {
+		connection.Environment["PGPASSWORD"] = conf.Password
+	}
+
 	switch conf.dumpCompression {
 	case "gzip":
 		cmd = append(cmd, "| gzip")
@@ -119,10 +122,11 @@ func (conf *PostgresCommonOptions) PgDumpAllCommandBuilder() []interface{} {
 		cmd = append(cmd, "| xz --compress --stdout")
 	}
 
-	return conf.connection.RawShellCommandBuilder(cmd...)
+	return connection.RawShellCommandBuilder(cmd...)
 }
 
 func (conf *PostgresCommonOptions) PostgresRestoreCommandBuilder(args ...string) []interface{} {
+	connection := conf.connection.Clone()
 	cmd := []string{}
 
 	switch conf.dumpCompression {
@@ -132,10 +136,6 @@ func (conf *PostgresCommonOptions) PostgresRestoreCommandBuilder(args ...string)
 		cmd = append(cmd, "bzcat |")
 	case "xz":
 		cmd = append(cmd, "xzcat |")
-	}
-
-	if conf.Password != "" {
-		cmd = append(cmd, "PGPASSWORD=" + shell.Quote(conf.Password))
 	}
 
 	cmd = append(cmd, "pg_dump")
@@ -148,11 +148,15 @@ func (conf *PostgresCommonOptions) PostgresRestoreCommandBuilder(args ...string)
 		cmd = append(cmd, "-U", shell.Quote(conf.Username))
 	}
 
+	if conf.Password != "" {
+		connection.Environment["PGPASSWORD"] = conf.Password
+	}
+
 	if len(args) > 0 {
 		cmd = append(cmd, args...)
 	}
 
-	return conf.connection.RawShellCommandBuilder(cmd...)
+	return connection.RawShellCommandBuilder(cmd...)
 }
 
 func (conf *PostgresCommonOptions) ExecStatement(statement string) string {

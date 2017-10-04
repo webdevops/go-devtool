@@ -79,6 +79,7 @@ func  (conf *MysqlCommonOptions) Init() {
 }
 
 func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{} {
+	connection := conf.connection.Clone()
 	cmd := []string{"-NB"}
 
 	if conf.Hostname != "" {
@@ -94,17 +95,18 @@ func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{
 	}
 
 	if conf.Password != "" {
-		cmd = append(cmd, shell.Quote("-p" + conf.Password))
+		connection.Environment["MYSQL_PWD"] = conf.Password
 	}
 
 	if len(args) > 0 {
 		cmd = append(cmd, args...)
 	}
 
-	return conf.connection.RawCommandBuilder("mysql", cmd...)
+	return connection.RawCommandBuilder("mysql", cmd...)
 }
 
 func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(args ...string) []interface{} {
+	connection := conf.connection.Clone()
 	cmd := []string{"mysqldump", "--single-transaction"}
 
 	if conf.Hostname != "" {
@@ -120,7 +122,7 @@ func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(args ...string) []interf
 	}
 
 	if conf.Password != "" {
-		cmd = append(cmd, shell.Quote("-p" + conf.Password))
+		connection.Environment["MYSQL_PWD"] = conf.Password
 	}
 
 	if len(args) > 0 {
@@ -136,10 +138,11 @@ func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(args ...string) []interf
 		cmd = append(cmd, "| xz --compress --stdout")
 	}
 
-	return conf.connection.RawShellCommandBuilder(cmd...)
+	return connection.RawShellCommandBuilder(cmd...)
 }
 
 func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []interface{} {
+	connection := conf.connection.Clone()
 	cmd := []string{}
 
 	switch conf.dumpCompression {
@@ -166,14 +169,14 @@ func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []int
 	}
 
 	if conf.Password != "" {
-		cmd = append(cmd, shell.Quote("-p" + conf.Password))
+		connection.Environment["MYSQL_PWD"] = conf.Password
 	}
 
 	if len(args) > 0 {
 		cmd = append(cmd, args...)
 	}
 
-	return conf.connection.RawShellCommandBuilder(cmd...)
+	return connection.RawShellCommandBuilder(cmd...)
 }
 
 func (conf *MysqlCommonOptions) ExecStatement(database string, statement string) string {
