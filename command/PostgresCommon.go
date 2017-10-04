@@ -1,7 +1,6 @@
 package command
 
 import (
-	"bufio"
 	"strings"
 	"github.com/webdevops/go-shell"
 	"github.com/webdevops/go-shell/commandbuilder"
@@ -171,23 +170,19 @@ func  (conf *PostgresCommonOptions) InitDockerSettings() {
 	containerId := connectionClone.DockerGetContainerId(containerName)
 	fmt.Println(fmt.Sprintf(" - Using docker container \"%s\"", containerId))
 
-	cmd := shell.Cmd(connectionClone.CommandBuilder("docker", "inspect",  "-f", "{{range .Config.Env}}{{println .}}{{end}}", containerId)...)
-	envList := cmd.Run().Stdout.String()
+	containerEnv := GetDockerEnvList(connectionClone, containerId)
 
-	scanner := bufio.NewScanner(strings.NewReader(envList))
-	for scanner.Scan() {
-		line := scanner.Text()
-		split := strings.SplitN(line, "=", 2)
-		if len(split) == 2 {
-			varName, varValue := split[0], split[1]
+	// get user from env
+	if val, ok := containerEnv["POSTGRES_USER"]; ok {
+		if conf.Username == "" {
+			conf.Username = val
+		}
+	}
 
-			if varName == "POSTGRES_USER" && conf.Username == "" {
-				conf.Username = varValue
-			}
-
-			if varName == "POSTGRES_PASSWORD" && conf.Password == ""  {
-				conf.Password = varValue
-			}
+	// get user from env
+	if val, ok := containerEnv["POSTGRES_PASSWORD"]; ok {
+		if conf.Username == "" {
+			conf.Password = val
 		}
 	}
 }

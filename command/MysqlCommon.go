@@ -209,8 +209,6 @@ func  (conf *MysqlCommonOptions) GetTableList(schema string) []string {
 	return ret
 }
 
-
-
 func  (conf *MysqlCommonOptions) InitDockerSettings() {
 	containerName := conf.connection.Docker
 
@@ -221,21 +219,14 @@ func  (conf *MysqlCommonOptions) InitDockerSettings() {
 	containerId := connectionClone.DockerGetContainerId(containerName)
 	fmt.Println(fmt.Sprintf(" - Using docker container \"%s\"", containerId))
 
-	cmd := shell.Cmd(connectionClone.CommandBuilder("docker", "inspect",  "-f", "{{range .Config.Env}}{{println .}}{{end}}", containerId)...)
-	envList := cmd.Run().Stdout.String()
+	containerEnv := GetDockerEnvList(connectionClone, containerId)
 
-	scanner := bufio.NewScanner(strings.NewReader(envList))
-	for scanner.Scan() {
-		line := scanner.Text()
-		split := strings.SplitN(line, "=", 2)
-		if len(split) == 2 {
-			varName, varValue := split[0], split[1]
-
-			if varName == "MYSQL_ROOT_PASSWORD" && conf.Username == "" && conf.Password == "" {
-				conf.Username = "root"
-				conf.Password = varValue
-				conf.Hostname = ""
-			}
+	// get root pass from env
+	if val, ok := containerEnv["MYSQL_ROOT_PASSWORD"]; ok {
+		if conf.Username == "" && conf.Password == "" {
+			conf.Username = "root"
+			conf.Password = val
+			conf.Hostname = ""
 		}
 	}
 }
