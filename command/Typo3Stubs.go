@@ -53,6 +53,7 @@ func (conf *Typo3Stubs) Execute(args []string) error {
 
 func (conf *Typo3Stubs) processStorage(storage storage) {
 	stubgen := stubfilegenerator.StubGenerator()
+	stubgen.Image.Text = append(stubgen.Image.Text, "Size: %IMAGE_WIDTH% * %IMAGE_HEIGHT%")
 
 	if conf.Force {
 		stubgen.Overwrite = true
@@ -89,6 +90,8 @@ func (conf *Typo3Stubs) processStorage(storage storage) {
 		}
 
 		stubgen.TemplateVariables["PATH"] = file.Path
+		stubgen.TemplateVariables["IMAGE_WIDTH"] = file.ImageWidth
+		stubgen.TemplateVariables["IMAGE_HEIGHT"] = file.ImageHeight
 		stubgen.Image.Width, _ = strconv.Atoi(file.ImageWidth)
 		stubgen.Image.Height, _ = strconv.Atoi(file.ImageHeight)
 		stubgen.GenerateStub(file.AbsPath)
