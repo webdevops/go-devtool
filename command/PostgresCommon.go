@@ -171,7 +171,7 @@ func  (conf *PostgresCommonOptions) InitDockerSettings() {
 	containerId := connectionClone.DockerGetContainerId(containerName)
 	fmt.Println(fmt.Sprintf(" - Using docker container \"%s\"", containerId))
 
-	cmd := shell.Cmd(connectionClone.CommandBuilder("docker", "inspect",  "-f", shell.Quote("{{range .Config.Env}}{{println .}}{{end}}"), shell.Quote(containerId))...)
+	cmd := shell.Cmd(connectionClone.CommandBuilder("docker", "inspect",  "-f", "{{range .Config.Env}}{{println .}}{{end}}", containerId)...)
 	envList := cmd.Run().Stdout.String()
 
 	scanner := bufio.NewScanner(strings.NewReader(envList))

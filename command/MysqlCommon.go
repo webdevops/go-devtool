@@ -64,7 +64,7 @@ func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{
 		cmd = append(cmd, args...)
 	}
 
-	return conf.connection.CommandBuilder("mysql", cmd...)
+	return conf.connection.RawCommandBuilder("mysql", cmd...)
 }
 
 func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(args ...string) []interface{} {
@@ -164,7 +164,7 @@ func (conf *MysqlCommonOptions) ExecQuery(database string, statement string) map
 	return ret
 }
 
-func  (conf *MysqlCommonOptions) GetTableList (schema string) []string {
+func  (conf *MysqlCommonOptions) GetTableList(schema string) []string {
 	var ret []string
 
 	output := conf.ExecStatement("mysql", fmt.Sprintf("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %s", mysqlQuote(schema)))
@@ -190,7 +190,7 @@ func  (conf *MysqlCommonOptions) InitDockerSettings() {
 	containerId := connectionClone.DockerGetContainerId(containerName)
 	fmt.Println(fmt.Sprintf(" - Using docker container \"%s\"", containerId))
 
-	cmd := shell.Cmd(connectionClone.CommandBuilder("docker", "inspect",  "-f", shell.Quote("{{range .Config.Env}}{{println .}}{{end}}"), shell.Quote(containerId))...)
+	cmd := shell.Cmd(connectionClone.CommandBuilder("docker", "inspect",  "-f", "{{range .Config.Env}}{{println .}}{{end}}", containerId)...)
 	envList := cmd.Run().Stdout.String()
 
 	scanner := bufio.NewScanner(strings.NewReader(envList))
