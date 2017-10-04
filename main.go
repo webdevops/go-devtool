@@ -63,7 +63,7 @@ func createArgparser() {
 		return command.Execute(args)
 	}
 	
-	argparser.AddCommand("version", "MySQL dump schema", "Backup MySQL schema to file", &command.Version{Name:Name, Version:Version, Author:Author})
+	argparser.AddCommand("version", "Show version", "Show current app version", &command.Version{Name:Name, Version:Version, Author:Author})
 
 	argparser.AddCommand("mysql:debug", "MySQL debug", "Show MySQL query log", &command.MysqlDebug{})
 	argparser.AddCommand("mysql:slowlog", "MySQL slow query log", "Show MySQL slow query log", &command.MysqlSlowLog{})
