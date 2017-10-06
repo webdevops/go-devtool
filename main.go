@@ -70,7 +70,7 @@ func createArgparser() {
 	}
 	
 	argparser.AddCommand("version", "Show version", "Show current app version", &command.Version{Name:Name, Version:Version, Author:Author})
-	argparser.AddCommand("self-update", "Self update", "Run self update of this application", &command.SelfUpdate{GithubOrganization:GithubOrganization, GithubRepository:GithubRepository, GithubAssetTemplate:GithubAssetTemplate})
+	argparser.AddCommand("self-update", "Self update", "Run self update of this application", &command.SelfUpdate{GithubOrganization:GithubOrganization, GithubRepository:GithubRepository, GithubAssetTemplate:GithubAssetTemplate, CurrentVersion:Version})
 
 	argparser.AddCommand("mysql:debug", "MySQL debug", "Show MySQL query log", &command.MysqlDebug{})
 	argparser.AddCommand("mysql:slowlog", "MySQL slow query log", "Show MySQL slow query log", &command.MysqlSlowLog{})
