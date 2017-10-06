@@ -84,6 +84,7 @@ func (conf *SelfUpdate) runUpdate(url string) error {
 	err = update.Apply(resp.Body, update.Options{})
 	if err != nil {
 		// error handling
+		fmt.Println(fmt.Sprintf(" - updating application failed: %s", err))
 	}
 	return err
 }
