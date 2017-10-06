@@ -3,7 +3,7 @@ TAG ?= $(shell git describe --tags)
 GOBUILD = go build -ldflags '-w'
 
 ALL = \
-	$(foreach arch,64 32,\
+	$(foreach arch,x64 x32,\
 	$(foreach suffix,linux osx,\
 		build/gdt-$(arch)-$(suffix))) \
 	$(foreach arch,arm arm64,\
@@ -29,11 +29,11 @@ clean:
 # os is determined as thus: if variable of suffix exists, it's taken, if not, then
 # suffix itself is taken
 osx = darwin
-build/gdt-64-%: $(SOURCE)
+build/gdt-x64-%: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=$(firstword $($*) $*) GOARCH=amd64 $(GOBUILD) -o $@
 
-build/gdt-32-%: $(SOURCE)
+build/gdt-x32-%: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=$(firstword $($*) $*) GOARCH=386 $(GOBUILD) -o $@
 
