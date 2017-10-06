@@ -3,10 +3,10 @@ package command
 import (
 	"fmt"
 	"strconv"
+	"runtime"
 	"path/filepath"
 	"github.com/webdevops/go-stubfilegenerator"
 	"github.com/remeh/sizedwaitgroup"
-	"runtime"
 )
 
 type Typo3Stubs struct {
