@@ -102,7 +102,7 @@ func (conf *Typo3Stubs) processStorage(storage storage) {
 			stubgen.TemplateVariables["IMAGE_HEIGHT"] = file.ImageHeight
 			stubgen.Image.Width, _ = strconv.Atoi(file.ImageWidth)
 			stubgen.Image.Height, _ = strconv.Atoi(file.ImageHeight)
-			stubgen.GenerateStub(file.AbsPath)
+			stubgen.Generate(file.AbsPath)
 		} (row, stubgen.Clone())
 		swg.Wait()
 	}
