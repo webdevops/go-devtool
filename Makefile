@@ -5,9 +5,9 @@ GOBUILD = go build -ldflags '-w'
 ALL = \
 	$(foreach arch,x64 x32,\
 	$(foreach suffix,linux osx,\
-		build/gdt-$(arch)-$(suffix))) \
+		build/gdt-$(suffix)-$(arch))) \
 	$(foreach arch,arm arm64,\
-		build/gdt-$(arch)-linux)
+		build/gdt-linux-$(arch))
 
 all: dependencies test build
 
@@ -29,19 +29,19 @@ clean:
 # os is determined as thus: if variable of suffix exists, it's taken, if not, then
 # suffix itself is taken
 osx = darwin
-build/gdt-x64-%: $(SOURCE)
+build/gdt-%-x64: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=$(firstword $($*) $*) GOARCH=amd64 $(GOBUILD) -o $@
 
-build/gdt-x32-%: $(SOURCE)
+build/gdt-%-x32: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=$(firstword $($*) $*) GOARCH=386 $(GOBUILD) -o $@
 
-build/gdt-arm-linux: $(SOURCE)
+build/gdt-linux-arm: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=6 $(GOBUILD) -o $@
 
-build/gdt-arm64-linux: $(SOURCE)
+build/gdt-linux-arm64: $(SOURCE)
 	@mkdir -p $(@D)
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GOBUILD) -o $@
 

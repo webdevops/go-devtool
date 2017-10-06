@@ -34,8 +34,7 @@ Help
 ====
 
 ```
-Usage:
-  main [OPTIONS] <command>
+  godevtool [OPTIONS] <command>
 
 Application Options:
   -v, --verbose  verbose mode
@@ -55,9 +54,10 @@ Available commands:
   postgres:restore         PostgreSQL restore instance
   postgres:schema:dump     PostgreSQL dump schema
   postgres:schema:restore  PostgreSQL restore schema
+  self-update              Self update
   typo3:beuser             TYPO3 create BE user
   typo3:stubs              TYPO3 create file stubs
-  version                  MySQL dump schema
+  version                  Show version
 
 ```
 

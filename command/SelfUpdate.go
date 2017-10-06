@@ -27,6 +27,8 @@ func (conf *SelfUpdate) Execute(args []string) error {
 		log.Println("GitHub rate limit, please try again later")
 	}
 
+	fmt.Println(fmt.Sprintf(" - latest version is %s", release.GetName()))
+
 	os := runtime.GOOS
 	switch (runtime.GOOS) {
 	case "darwin":
@@ -56,7 +58,7 @@ func (conf *SelfUpdate) Execute(args []string) error {
 		}
 	}
 
-	fmt.Println(" - unable to download latest version")
+	fmt.Println(" - unable to find asset, please contact maintainer")
 	return nil
 }
 

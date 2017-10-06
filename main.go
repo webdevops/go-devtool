@@ -21,7 +21,7 @@ const (
 	// self update informations
 	GithubOrganization  = "webdevops"
 	GithubRepository    = "go-devtool"
-	GithubAssetTemplate = "gdt-%ARCH%-%OS%"
+	GithubAssetTemplate = "gdt-%OS%-%ARCH%"
 )
 
 var (
