@@ -15,7 +15,7 @@ import (
 const (
 	Name    = "godevtool"
 	Author  = "webdevops.io"
-	Version = "0.1.1"
+	Version = "0.3.0"
 )
 
 var (
