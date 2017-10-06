@@ -1,10 +1,12 @@
 package command
 
 import (
-	"github.com/webdevops/go-stubfilegenerator"
 	"fmt"
 	"strconv"
 	"path/filepath"
+	"github.com/webdevops/go-stubfilegenerator"
+	"github.com/remeh/sizedwaitgroup"
+	"runtime"
 )
 
 type Typo3Stubs struct {
@@ -53,7 +55,7 @@ func (conf *Typo3Stubs) Execute(args []string) error {
 }
 
 func (conf *Typo3Stubs) processStorage(storage storage) {
-	stubgen := stubfilegenerator.StubGenerator()
+	stubgen := stubfilegenerator.NewStubGenerator()
 	stubgen.Image.Text = append(stubgen.Image.Text, "Size: %IMAGE_WIDTH% * %IMAGE_HEIGHT%")
 
 	if conf.Force {
@@ -71,31 +73,38 @@ func (conf *Typo3Stubs) processStorage(storage storage) {
               WHERE f.storage = ` + storage.Uid;
 	result := conf.Options.ExecQuery(conf.Positional.Schema, sql)
 
+	swg := sizedwaitgroup.New(runtime.GOMAXPROCS(0) * 10)
 	for _, row := range result.Row {
-		rowList := row.GetList()
+		row := row.GetList()
 
-		file := storageFile{}
-		file.ImageWidth = "800"
-		file.ImageHeight = "400"
+		swg.Add()
+		go func(row map[string]string, stubgen stubfilegenerator.StubGenerator) {
+			defer swg.Done()
 
-		switch len(rowList) {
-		case 4:
-			file.ImageWidth = rowList["meta_width"]
-			file.ImageHeight = rowList["meta_height"]
-			fallthrough
-		case 2:
-			file.Uid = rowList["uid"]
-			file.Path = filepath.Join(storage.Path, rowList["identifier"])
-			file.RelPath = filepath.Join(conf.Positional.Typo3Root, file.Path)
-			file.AbsPath, _ = filepath.Abs(file.RelPath)
-		}
+			file := storageFile{}
+			file.ImageWidth = "800"
+			file.ImageHeight = "400"
 
-		stubgen.TemplateVariables["PATH"] = file.Path
-		stubgen.TemplateVariables["IMAGE_WIDTH"] = file.ImageWidth
-		stubgen.TemplateVariables["IMAGE_HEIGHT"] = file.ImageHeight
-		stubgen.Image.Width, _ = strconv.Atoi(file.ImageWidth)
-		stubgen.Image.Height, _ = strconv.Atoi(file.ImageHeight)
-		stubgen.GenerateStub(file.AbsPath)
+			switch len(row) {
+			case 4:
+				file.ImageWidth = row["meta_width"]
+				file.ImageHeight = row["meta_height"]
+				fallthrough
+			case 2:
+				file.Uid = row["uid"]
+				file.Path = filepath.Join(storage.Path, row["identifier"])
+				file.RelPath = filepath.Join(conf.Positional.Typo3Root, file.Path)
+				file.AbsPath, _ = filepath.Abs(file.RelPath)
+			}
+
+			stubgen.TemplateVariables["PATH"] = file.Path
+			stubgen.TemplateVariables["IMAGE_WIDTH"] = file.ImageWidth
+			stubgen.TemplateVariables["IMAGE_HEIGHT"] = file.ImageHeight
+			stubgen.Image.Width, _ = strconv.Atoi(file.ImageWidth)
+			stubgen.Image.Height, _ = strconv.Atoi(file.ImageHeight)
+			stubgen.GenerateStub(file.AbsPath)
+		} (row, stubgen.Clone())
+		swg.Wait()
 	}
 
 }
