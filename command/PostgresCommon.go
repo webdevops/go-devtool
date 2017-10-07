@@ -151,7 +151,7 @@ func (conf *PostgresCommonOptions) PostgresRestoreCommandBuilder(args ...string)
 		cmd = append(cmd, "xzcat |")
 	}
 
-	cmd = append(cmd, "pg_dump")
+	cmd = append(cmd, "psql")
 
 	if conf.Hostname != "" {
 		cmd = append(cmd, "-h", shell.Quote(conf.Hostname))
