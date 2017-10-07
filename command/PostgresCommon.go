@@ -9,6 +9,7 @@ import (
 
 type PostgresCommonOptions struct {
 	Hostname string `long:"hostname"`
+	Port     string `short:"P" long:"port"`
 	Username string `short:"u" long:"user"`
 	Password string `short:"p" long:"password"`
 	Docker   string `          long:"docker"`
@@ -48,6 +49,10 @@ func (conf *PostgresCommonOptions) PsqlCommandBuilder(args ...string) []interfac
 		cmd = append(cmd, "-h", shell.Quote(conf.Hostname))
 	}
 
+	if conf.Port != "" {
+		cmd = append(cmd, "-p", shell.Quote(conf.Port))
+	}
+
 	if conf.Username != "" {
 		cmd = append(cmd, "-U", shell.Quote(conf.Username))
 	}
@@ -71,6 +76,10 @@ func (conf *PostgresCommonOptions) PgDumpCommandBuilder(schema string) []interfa
 
 	if conf.Hostname != "" {
 		cmd = append(cmd, "-h", shell.Quote(conf.Hostname))
+	}
+
+	if conf.Port != "" {
+		cmd = append(cmd, "-p", shell.Quote(conf.Port))
 	}
 
 	if conf.Username != "" {
@@ -103,6 +112,10 @@ func (conf *PostgresCommonOptions) PgDumpAllCommandBuilder() []interface{} {
 
 	if conf.Hostname != "" {
 		cmd = append(cmd, "-h", shell.Quote(conf.Hostname))
+	}
+
+	if conf.Port != "" {
+		cmd = append(cmd, "-p", shell.Quote(conf.Port))
 	}
 
 	if conf.Username != "" {
@@ -142,6 +155,10 @@ func (conf *PostgresCommonOptions) PostgresRestoreCommandBuilder(args ...string)
 
 	if conf.Hostname != "" {
 		cmd = append(cmd, "-h", shell.Quote(conf.Hostname))
+	}
+
+	if conf.Port != "" {
+		cmd = append(cmd, "-p", shell.Quote(conf.Port))
 	}
 
 	if conf.Username != "" {
