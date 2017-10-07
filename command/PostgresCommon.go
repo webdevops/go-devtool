@@ -191,19 +191,23 @@ func  (conf *PostgresCommonOptions) InitDockerSettings() {
 	containerId := connectionClone.DockerGetContainerId(containerName)
 	fmt.Println(fmt.Sprintf(" - Using docker container \"%s\"", containerId))
 
-	containerEnv := GetDockerEnvList(connectionClone, containerId)
+	containerEnv := connectionClone.DockerGetEnvironment(containerId)
 
-	// get user from env
-	if val, ok := containerEnv["POSTGRES_USER"]; ok {
-		if conf.Username == "" {
-			conf.Username = val
+	// try to guess user/password
+	if conf.Username == "" {
+		// get superuser pass from env
+		if pass, ok := containerEnv["POSTGRES_PASSWORD"]; ok {
+			if user, ok := containerEnv["POSTGRES_USER"]; ok {
+				fmt.Println(fmt.Sprintf("   -> using postgres superadmin account \"%s\" (from env:POSTGRES_USER and env:POSTGRES_PASSWORD)", user))
+				conf.Username = user
+				conf.Password = pass
+			} else {
+				fmt.Println("   -> using postgres superadmin account \"postgres\" (from env:POSTGRES_PASSWORD)")
+				// only password available
+				conf.Username = "postgres"
+				conf.Password = pass
+			}
 		}
 	}
 
-	// get user from env
-	if val, ok := containerEnv["POSTGRES_PASSWORD"]; ok {
-		if conf.Username == "" {
-			conf.Password = val
-		}
-	}
 }

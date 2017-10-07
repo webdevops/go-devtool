@@ -222,14 +222,31 @@ func  (conf *MysqlCommonOptions) InitDockerSettings() {
 	containerId := connectionClone.DockerGetContainerId(containerName)
 	fmt.Println(fmt.Sprintf(" - Using docker container \"%s\"", containerId))
 
-	containerEnv := GetDockerEnvList(connectionClone, containerId)
+	containerEnv := connectionClone.DockerGetEnvironment(containerId)
 
-	// get root pass from env
-	if val, ok := containerEnv["MYSQL_ROOT_PASSWORD"]; ok {
-		if conf.Username == "" && conf.Password == "" {
-			conf.Username = "root"
-			conf.Password = val
-			conf.Hostname = ""
+	if conf.Username == "" {
+		if val, ok := containerEnv["MYSQL_ROOT_PASSWORD"]; ok {
+			// get root pass from env
+			if conf.Username == "" && conf.Password == "" {
+				fmt.Println("   -> using mysql root account (from env:MYSQL_ROOT_PASSWORD)")
+				conf.Username = "root"
+				conf.Password = val
+			}
+		} else if val, ok := containerEnv["MYSQL_ALLOW_EMPTY_PASSWORD"]; ok {
+			// get root without password from env
+			if val == "yes" && conf.Username == "" {
+				fmt.Println("   -> using mysql root account (from env:MYSQL_ALLOW_EMPTY_PASSWORD)")
+				conf.Username = "root"
+				conf.Password = ""
+			}
+		} else if user, ok := containerEnv["MYSQL_USER"]; ok {
+			if pass, ok := containerEnv["MYSQL_PASSWORD"]; ok {
+				if conf.Username == "" && conf.Password == "" {
+					fmt.Println(fmt.Sprintf("   -> using mysql user account \"%s\" (from env:MYSQL_USER and env:MYSQL_PASSWORD)", user))
+					conf.Username = user
+					conf.Password = pass
+				}
+			}
 		}
 	}
 }
