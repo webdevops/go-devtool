@@ -33,7 +33,7 @@ TYPO3:
 Install
 =======
 
-The binary file can be found in the [project releases](./releases/).
+The binary file can be found in the [project releases](https://github.com/webdevops/go-devtool/releases).
 
 ```
 DOWNLOAD_VERSION=0.3.2
