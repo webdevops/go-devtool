@@ -50,7 +50,11 @@ func (conf *FileStubs) Execute(args []string) error {
 	scanner := bufio.NewScanner(fileSource)
 	for scanner.Scan() {
 		relPath := scanner.Text()
-		path := scanner.Text()
+		path := relPath
+
+		if path == "" {
+			continue
+		}
 
 		if conf.RootPath != "" {
 			path = filepath.Join(conf.RootPath, path)
