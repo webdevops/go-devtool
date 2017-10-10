@@ -39,7 +39,7 @@ Install
 The binary file can be found in the [project releases](https://github.com/webdevops/go-devtool/releases).
 
 ```
-DOWNLOAD_VERSION=0.3.2
+DOWNLOAD_VERSION=0.3.3
 DOWNLOAD_OS=linux
 DOWNLOAD_ARCH=x64
 
