@@ -30,6 +30,9 @@ TYPO3:
 - Create file stubs from existing FAL informations
 - Create TYPO3 backend user
 
+File:
+- Create file stubs (small file examples) based on filelist
+
 Install
 =======
 
