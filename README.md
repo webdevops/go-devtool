@@ -48,6 +48,7 @@ Help
 ====
 
 ```
+Usage:
   godevtool [OPTIONS] <command>
 
 Application Options:
@@ -57,6 +58,7 @@ Help Options:
   -h, --help     Show this help message
 
 Available commands:
+  file:stubs               Create file stubs from list of files
   mysql:debug              MySQL debug
   mysql:dump               MySQL dump instance
   mysql:restore            MySQL restore instance
@@ -86,20 +88,20 @@ container is used without lookup using eg. `docker-compose`.
 
 *CONTAINER* is the name of the docker-compose container.
 
-| DSN style configuration                                             | Description                                                                                            |
-|:--------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|
-| ``compose:CONTAINER``                                               | Use container with docker-compose in current directory                                                 |
+| DSN style configuration                                             | Description                                                                                     |
+|:--------------------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| ``compose:CONTAINER``                                               | Use container with docker-compose in current directory                                          |
 | ``compose:CONTAINER;path=/path/to/project``                         | Use container with docker-compose in `/path/to/project` directory                               |
-| ``compose:CONTAINER;path=/path/to/project;file=custom-compose-yml`` | Use container with docker-compose in `/path/to/project` directory and `custom-compose.yml` file |
+| ``compose:CONTAINER;path=/path/to/project;file=custom-compose.yml`` | Use container with docker-compose in `/path/to/project` directory and `custom-compose.yml` file |
 | ``compose:CONTAINER;project-name=foobar``                           | Use container with docker-compose in current directory with project name `foobar`               |
 | ``compose:CONTAINER;host=example.com``                              | Use container with docker-compose in current directory with docker host `example.com`           |
 | ``compose:CONTAINER;env[FOOBAR]=BARFOO``                            | Use container with docker-compose in current directory with env var `FOOBAR` set to `BARFOO`    |
 
-| Query style configuration                                             | Description                                                                                            |
-|:----------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|
+| Query style configuration                                             | Description                                                                                     |
+|:----------------------------------------------------------------------|:------------------------------------------------------------------------------------------------|
 | ``compose://CONTAINER``                                               | Use container with docker-compose in current directory                                          |
 | ``compose://CONTAINER?path=/path/to/project``                         | Use container with docker-compose in `/path/to/project` directory                               |
-| ``compose://CONTAINER?path=/path/to/project&file=custom-compose-yml`` | Use container with docker-compose in `/path/to/project` directory and `custom-compose.yml` file |
+| ``compose://CONTAINER?path=/path/to/project&file=custom-compose.yml`` | Use container with docker-compose in `/path/to/project` directory and `custom-compose.yml` file |
 | ``compose://CONTAINER?project-name=foobar``                           | Use container with docker-compose in current directory with project name `foobar`               |
 | ``compose://CONTAINER?host=example.com``                              | Use container with docker-compose in current directory with docker host `example.com`           |
 | ``compose://CONTAINER?env[FOOBAR]=BARFOO``                            | Use container with docker-compose in current directory with env var `FOOBAR` set to `BARFOO`    |
@@ -152,4 +154,15 @@ gdt typo3:beuser --docker=081e7bfaada1 typo3
 
 ```
 
-Using the parameter ``--docker=configuration`` this commands
+
+FILE commands
+-------------
+
+```bash
+# Create stubs from stdin
+cat filelist | gdt file:stubs --stdin --path /tmp/foobar/
+
+# Create stubs from file content (from filelist)
+gdt file:stubs --stdin --path /tmp/foobar/ filelist
+
+```

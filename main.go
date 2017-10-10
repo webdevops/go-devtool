@@ -89,6 +89,8 @@ func createArgparser() {
 	argparser.AddCommand("typo3:stubs", "TYPO3 create file stubs", "", &command.Typo3Stubs{})
 	argparser.AddCommand("typo3:beuser", "TYPO3 create BE user", "", &command.Typo3BeUser{})
 
+	argparser.AddCommand("file:stubs", "Create file stubs from list of files", "", &command.FileStubs{})
+
 	args, err = argparser.Parse()
 
 	// check if there is an parse error
