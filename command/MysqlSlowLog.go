@@ -22,8 +22,10 @@ func (conf *MysqlSlowLog) Execute(args []string) error {
 	conf.Options.Init()
 
 	defer NewSigIntHandler(func() {
+		Logger.Step("disabling mysql slow log")
 		conf.Options.ExecStatement("mysql", "SET GLOBAL general_log = 'OFF'")
 		conf.Options.ExecStatement("mysql", "SET GLOBAL log_queries_not_using_indexes = 'OFF'")
+		Logger.Step("removing log file")
 		shell.Cmd(conf.Options.connection.CommandBuilder("rm", "-f", logfile)...).Run()
 	})()
 
