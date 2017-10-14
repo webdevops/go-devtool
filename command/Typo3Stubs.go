@@ -110,7 +110,7 @@ func (conf *Typo3Stubs) processStorage(storage storage, rootPath string) error {
 			}
 
 			Logger.Item(file.Path)
-			stubgen.TemplateVariables["PATH"] = file.Path
+			stubgen.TemplateVariables["PATH"] = filepath.Join(storage.Path, file.Path)
 			stubgen.TemplateVariables["IMAGE_WIDTH"] = file.ImageWidth
 			stubgen.TemplateVariables["IMAGE_HEIGHT"] = file.ImageHeight
 			stubgen.Image.Width, _ = strconv.Atoi(file.ImageWidth)
