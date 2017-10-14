@@ -11,72 +11,86 @@ const (
 	LogPrefix = ""
 	prefixMain = ":: "
 	prefixSub  = "   -> "
+	prefixItem  = "     - "
 	prefixCmd  = "      $ "
 	prefixErr  = "[ERROR] "
 )
 
-type SyncLogger struct {
+type Logger struct {
 	*log.Logger
 }
 
 var (
-	Logger *SyncLogger
+	logger *Logger
 	Verbose bool
 	CommandName string
 )
 
-func GetInstance(commandName string, flags int) *SyncLogger {
+func GetInstance(commandName string, flags int) *Logger {
 	CommandName = commandName
 
-	if Logger == nil {
-		Logger = &SyncLogger{log.New(os.Stdout, LogPrefix, flags)}
+	if logger == nil {
+		logger = &Logger{log.New(os.Stdout, LogPrefix, flags)}
 	}
-	return Logger
+	return logger
 }
 
-func (SyncLogger SyncLogger) Verbose(message string, sprintf ...interface{}) {
+func (log Logger) Verbose(message string, sprintf ...interface{}) {
 	if Verbose {
 		if len(sprintf) > 0 {
 			message = fmt.Sprintf(message, sprintf...)
 		}
 
-		SyncLogger.Println(message)
+		log.Println(message)
 	}
 }
 
-func (SyncLogger SyncLogger) Main(message string, sprintf ...interface{}) {
+func (log Logger) Main(message string, sprintf ...interface{}) {
 	if len(sprintf) > 0 {
 		message = fmt.Sprintf(message, sprintf...)
 	}
 
-	SyncLogger.Println(prefixMain + message)
+	log.Println(prefixMain + message)
 }
 
-func (SyncLogger SyncLogger) Step(message string, sprintf ...interface{}) {
+func (log Logger) Step(message string, sprintf ...interface{}) {
 	if len(sprintf) > 0 {
 		message = fmt.Sprintf(message, sprintf...)
 	}
 
-	SyncLogger.Println(prefixSub + message)
+	log.Println(prefixSub + message)
 }
 
 
-func (SyncLogger SyncLogger) Command(message string) {
-	SyncLogger.Println(prefixCmd + message)
-}
-
-func (SyncLogger SyncLogger) FatalExit(exitCode int, message string, sprintf ...interface{}) {
+func (log Logger) Item(message string, sprintf ...interface{}) {
 	if len(sprintf) > 0 {
 		message = fmt.Sprintf(message, sprintf...)
 	}
 
-	SyncLogger.Fatal(message)
+	log.Println(prefixItem + message)
+}
+
+
+func (log Logger) Command(message string) {
+	log.Println(prefixCmd + message)
+}
+
+func (log Logger) Printlnf(message string, sprintf ...interface{}) {
+	log.Printf(message + "\n", sprintf...)
+}
+
+func (log Logger) FatalExit(exitCode int, message string, sprintf ...interface{}) {
+	if len(sprintf) > 0 {
+		message = fmt.Sprintf(message, sprintf...)
+	}
+
+	log.Fatal(message)
 	os.Exit(exitCode)
 }
 
 
 // Log error object as message
-func (SyncLogger SyncLogger) FatalErrorExit(exitCode int, err error) {
+func (log Logger) FatalErrorExit(exitCode int, err error) {
 
 	if CommandName != "" {
 		cmdline := fmt.Sprintf("%s %s", CommandName, strings.Join(os.Args[1:], " "))

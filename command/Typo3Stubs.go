@@ -1,7 +1,7 @@
 package command
 
 import (
-	"fmt"
+	"os"
 	"strconv"
 	"runtime"
 	"path/filepath"
@@ -12,9 +12,9 @@ import (
 type Typo3Stubs struct {
 	Options MysqlCommonOptions `group:"common"`
 	Positional struct {
-		Schema string `description:"Schema" required:"1"`
-		Typo3Root string `description:"TYPO3 root path" required:"1"`
+		Database string `description:"Database" required:"1"`
 	} `positional-args:"true"`
+	RootPath    string  `long:"path"            description:"TYPO3 root path"`
 	Force  bool   `short:"f"  long:"force"      description:"Overwrite existing files"`
 }
 
@@ -34,8 +34,13 @@ type storageFile struct {
 }
 
 func (conf *Typo3Stubs) Execute(args []string) error {
-	fmt.Println("Starting TYPO3 fileadmin stub generator")
+	Logger.Main("Starting TYPO3 fileadmin stub generator")
 	conf.Options.Init()
+
+	rootPath, err := conf.GetTypo3Root()
+	if err != nil {
+		return err
+	}
 
 	sql := `SELECT uid,
                    name,
@@ -43,19 +48,28 @@ func (conf *Typo3Stubs) Execute(args []string) error {
               FROM sys_file_storage
              WHERE deleted = 0
               AND driver = 'local'`
-	result := conf.Options.ExecQuery(conf.Positional.Schema, sql)
+	result := conf.Options.ExecQuery(conf.Positional.Database, sql)
 
 	for _, row := range result.Row {
 		rowList := row.GetList()
 		storage := storage{rowList["uid"], rowList["name"], rowList["storagepath"]}
-		conf.processStorage(storage)
+		err := conf.processStorage(storage, rootPath)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (conf *Typo3Stubs) processStorage(storage storage) {
+func (conf *Typo3Stubs) processStorage(storage storage, rootPath string) error {
+	Logger.Step("processing storage \"%v\" (path: %v)", storage.Name, storage.Path)
 	stubgen := stubfilegenerator.NewStubGenerator()
+	err := stubgen.SetRootPath(filepath.Join(rootPath, storage.Path))
+	if err != nil {
+		return err
+	}
+
 	stubgen.Image.Text = append(stubgen.Image.Text, "Size: %IMAGE_WIDTH% * %IMAGE_HEIGHT%")
 
 	if conf.Force {
@@ -71,7 +85,7 @@ func (conf *Typo3Stubs) processStorage(storage storage) {
                      ON fm.file = f.uid
                     AND fm.t3ver_oid = 0
               WHERE f.storage = ` + storage.Uid;
-	result := conf.Options.ExecQuery(conf.Positional.Schema, sql)
+	result := conf.Options.ExecQuery(conf.Positional.Database, sql)
 
 	swg := sizedwaitgroup.New(runtime.GOMAXPROCS(0) * 10)
 	for _, row := range result.Row {
@@ -92,19 +106,34 @@ func (conf *Typo3Stubs) processStorage(storage storage) {
 				fallthrough
 			case 2:
 				file.Uid = row["uid"]
-				file.Path = filepath.Join(storage.Path, row["identifier"])
-				file.RelPath = filepath.Join(conf.Positional.Typo3Root, file.Path)
-				file.AbsPath, _ = filepath.Abs(file.RelPath)
+				file.Path = row["identifier"]
 			}
 
+			Logger.Item(file.Path)
 			stubgen.TemplateVariables["PATH"] = file.Path
 			stubgen.TemplateVariables["IMAGE_WIDTH"] = file.ImageWidth
 			stubgen.TemplateVariables["IMAGE_HEIGHT"] = file.ImageHeight
 			stubgen.Image.Width, _ = strconv.Atoi(file.ImageWidth)
 			stubgen.Image.Height, _ = strconv.Atoi(file.ImageHeight)
-			stubgen.Generate(file.AbsPath)
+			stubgen.Generate(file.Path)
 		} (row, stubgen.Clone())
 		swg.Wait()
 	}
 
+	return nil
 }
+
+
+func (conf *Typo3Stubs) GetTypo3Root() (string, error) {
+	if conf.RootPath == "" {
+		// use current working dir as root path
+		rootPath, err := os.Getwd()
+		if err != nil {
+			return "", err
+		}
+		conf.RootPath = rootPath
+	}
+
+	return conf.RootPath, nil
+}
+

@@ -1,14 +1,13 @@
 package command
 
 import (
-	"fmt"
+	"errors"
 	"context"
-	"log"
 	"runtime"
 	"strings"
+	"net/http"
 	"github.com/google/go-github/github"
 	"github.com/inconshreveable/go-update"
-	"net/http"
 )
 
 type SelfUpdate struct {
@@ -30,20 +29,20 @@ var (
 )
 
 func (conf *SelfUpdate) Execute(args []string) error {
-	fmt.Println("Starting self update")
+	Logger.Main("Starting self update")
 
 	client := github.NewClient(nil)
 	release, _, err := client.Repositories.GetLatestRelease(context.Background(), conf.GithubOrganization, conf.GithubRepository)
 
 	if _, ok := err.(*github.RateLimitError); ok {
-		log.Println("GitHub rate limit, please try again later")
+		Logger.Fatalln("GitHub rate limit, please try again later")
 	}
 
-	fmt.Println(fmt.Sprintf(" - latest version is %s", release.GetName()))
+	Logger.Step("latest version is %s", release.GetName())
 
 	// check if latest version is current version
 	if !conf.Force && release.GetName() == conf.CurrentVersion {
-		fmt.Println(" - already using the latest version")
+		Logger.Step("already using the latest version")
 		return nil
 	}
 
@@ -65,33 +64,32 @@ func (conf *SelfUpdate) Execute(args []string) error {
 	assetName = strings.Replace(assetName, "%ARCH%", arch, -1)
 
 	// search assets in release for the desired filename
-	fmt.Println(fmt.Sprintf(" - searching for asset \"%s\"", assetName))
+	Logger.Step("searching for asset \"%s\"", assetName)
 	for _, asset := range release.Assets {
 		if asset.GetName() == assetName {
 			downloadUrl := asset.GetBrowserDownloadURL()
-			fmt.Println(fmt.Sprintf(" - found new update url \"%s\"", downloadUrl))
+			Logger.Step("found new update url \"%s\"", downloadUrl)
 			conf.runUpdate(downloadUrl)
-			fmt.Println(fmt.Sprintf(" - finished update to version %s", release.GetName()))
+			Logger.Step("finished update to version %s", release.GetName())
 			return nil
 		}
 	}
 
-	fmt.Println(" - unable to find asset, please contact maintainer")
-	return nil
+	return errors.New("unable to find asset, please contact maintainer")
 }
 
 func (conf *SelfUpdate) runUpdate(url string) error {
-	fmt.Println(" - downloading update")
+	Logger.Step("downloading update")
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	fmt.Println(" - applying update")
+	Logger.Step("applying update")
 	err = update.Apply(resp.Body, update.Options{})
 	if err != nil {
 		// error handling
-		fmt.Println(fmt.Sprintf(" - updating application failed: %s", err))
+		Logger.Step("updating application failed: %s", err)
 	}
 	return err
 }

@@ -7,10 +7,6 @@ import (
 	"time"
 	"path/filepath"
 	"math/rand"
-	"bufio"
-	"strings"
-	"github.com/webdevops/go-shell"
-	"github.com/webdevops/go-shell/commandbuilder"
 )
 
 func NewSigIntHandler(callback func()) func() {
@@ -21,13 +17,14 @@ func NewSigIntHandler(callback func()) func() {
 	go func() {
 		<-c
 		isSigintExit = true
-		fmt.Println("Starting termination as requested by user...")
+		fmt.Fprintln(os.Stderr,"Starting termination as requested by user...")
 	}()
 
 	return func () {
+		fmt.Fprintln(os.Stderr,"Running cleanup...please wait...")
 		callback()
 		if (isSigintExit) {
-			fmt.Println("Terminated by user (SIGINT)")
+			fmt.Fprintln(os.Stderr,"Terminated by user (SIGINT)")
 		}
 	}
 }
@@ -58,27 +55,6 @@ func GetCompressionByFilename(file string) string {
 	}
 
 	return compression
-}
-
-func GetDockerEnvList(connection commandbuilder.Connection, containerId string) map[string]string {
-	ret := map[string]string{}
-
-	cmd := shell.Cmd(connection.CommandBuilder("docker", "inspect", "-f", "{{range .Config.Env}}{{println .}}{{end}}", containerId)...)
-	envList := cmd.Run().Stdout.String()
-
-	scanner := bufio.NewScanner(strings.NewReader(envList))
-	for scanner.Scan() {
-		line := scanner.Text()
-		split := strings.SplitN(line, "=", 2)
-
-		if len(split) == 2 {
-			varName, varValue := split[0], split[1]
-
-			ret[varName] = varValue
-		}
-	}
-
-	return ret
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"

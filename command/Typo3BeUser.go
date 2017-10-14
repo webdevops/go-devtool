@@ -38,19 +38,19 @@ setup.default.moduleData.file_list.showPalettes = 1`
 type Typo3BeUser struct {
 	Options MysqlCommonOptions `group:"common"`
 	Positional struct {
-		Schema string `description:"Schema" required:"1"`
+		Database string `description:"Database" required:"1"`
 	} `positional-args:"true"`
 	Username string           `long:"typo3-user"       description:"TYPO3 username"    default:"dev"`
 	Password string           `long:"typo3-password"   description:"TYPO3 password"    default:"dev"`
 }
 
 func (conf *Typo3BeUser) Execute(args []string) error {
-	fmt.Println("Starting TYPO3 BE user generator")
+	Logger.Main("Starting TYPO3 BE user generator")
 	conf.Options.Init()
 
 	userId := "NULL"
 
-	fmt.Println(" - Creating salted MD5 password")
+	Logger.Step("creating salted MD5 password")
 	password := typo3PasswordGenerator(conf.Password)
 
 	sql := `SELECT uid
@@ -58,7 +58,7 @@ func (conf *Typo3BeUser) Execute(args []string) error {
              WHERE username = %s
                AND deleted = 0`
 	sql = fmt.Sprintf(sql, mysqlQuote(conf.Username))
-	result := conf.Options.ExecQuery(conf.Positional.Schema, sql)
+	result := conf.Options.ExecQuery(conf.Positional.Database, sql)
 
 	for _, row := range result.Row {
 		rowList := row.GetList()
@@ -76,12 +76,12 @@ func (conf *Typo3BeUser) Execute(args []string) error {
                starttime = VALUES(starttime),
                endtime   = VALUES(endtime)`
 	sql = fmt.Sprintf(sql, userId, mysqlQuote(conf.Username), mysqlQuote(password), mysqlQuote(t3BeUserConfig), mysqlQuote(t3BeUserUC))
-	conf.Options.ExecStatement(conf.Positional.Schema, sql)
+	conf.Options.ExecStatement(conf.Positional.Database, sql)
 
 	if userId != "NULL" {
-		fmt.Println(fmt.Sprintf(" - Updated user \"%s\" (UID: %s)", conf.Username, userId))
+		Logger.Step("updated user \"%s\" (UID: %s)", conf.Username, userId)
 	} else {
-		fmt.Println(fmt.Sprintf(" - Created user \"%s\"", conf.Username))
+		Logger.Step("created user \"%s\"", conf.Username)
 	}
 
 	return nil

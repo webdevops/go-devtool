@@ -4,7 +4,6 @@ import (
 	"strings"
 	"github.com/webdevops/go-shell"
 	"github.com/webdevops/go-shell/commandbuilder"
-	"fmt"
 )
 
 type PostgresCommonOptions struct {
@@ -28,9 +27,11 @@ func postgresIdentifier(value string) string {
 }
 
 func  (conf *PostgresCommonOptions) Init() {
+	Logger.Step("init connection settings")
+
 	if conf.SSH != "" {
 		conf.connection.Hostname = conf.SSH
-		fmt.Println(fmt.Sprintf(" - Using ssh connection \"%s\"", conf.SSH))
+		Logger.Item("using ssh connection \"%s\"", conf.SSH)
 	}
 
 	if conf.Docker != "" {
@@ -68,7 +69,7 @@ func (conf *PostgresCommonOptions) PsqlCommandBuilder(args ...string) []interfac
 	return connection.RawShellCommandBuilder(cmd...)
 }
 
-func (conf *PostgresCommonOptions) PgDumpCommandBuilder(schema string) []interface{} {
+func (conf *PostgresCommonOptions) PgDumpCommandBuilder(database string) []interface{} {
 	connection := conf.connection.Clone()
 	cmd := []string{}
 
@@ -90,7 +91,7 @@ func (conf *PostgresCommonOptions) PgDumpCommandBuilder(schema string) []interfa
 		connection.Environment["PGPASSWORD"] = conf.Password
 	}
 
-	cmd = append(cmd, shell.Quote(schema))
+	cmd = append(cmd, shell.Quote(database))
 
 	switch conf.dumpCompression {
 	case "gzip":
@@ -189,7 +190,7 @@ func  (conf *PostgresCommonOptions) InitDockerSettings() {
 	connectionClone.Type  = "auto"
 
 	containerId := connectionClone.DockerGetContainerId(containerName)
-	fmt.Println(fmt.Sprintf(" - Using docker container \"%s\"", containerId))
+	Logger.Item("using docker container \"%s\"", containerId)
 
 	containerEnv := connectionClone.DockerGetEnvironment(containerId)
 
@@ -198,11 +199,11 @@ func  (conf *PostgresCommonOptions) InitDockerSettings() {
 		// get superuser pass from env
 		if pass, ok := containerEnv["POSTGRES_PASSWORD"]; ok {
 			if user, ok := containerEnv["POSTGRES_USER"]; ok {
-				fmt.Println(fmt.Sprintf("   -> using postgres superadmin account \"%s\" (from env:POSTGRES_USER and env:POSTGRES_PASSWORD)", user))
+				Logger.Item("using postgres superadmin account \"%s\" (from env:POSTGRES_USER and env:POSTGRES_PASSWORD)", user)
 				conf.Username = user
 				conf.Password = pass
 			} else {
-				fmt.Println("   -> using postgres superadmin account \"postgres\" (from env:POSTGRES_PASSWORD)")
+				Logger.Item("using postgres superadmin account \"postgres\" (from env:POSTGRES_PASSWORD)")
 				// only password available
 				conf.Username = "postgres"
 				conf.Password = pass

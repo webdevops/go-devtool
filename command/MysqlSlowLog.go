@@ -1,9 +1,9 @@
 package command
 
 import (
+	"fmt"
 	"time"
 	"math/rand"
-	"fmt"
 	"github.com/webdevops/go-shell"
 )
 
@@ -14,10 +14,10 @@ type MysqlSlowLog struct {
 }
 
 func (conf *MysqlSlowLog) Execute(args []string) error {
-	fmt.Println("Starting MySQL slow log")
+	Logger.Main("Starting MySQL slow log")
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	logfile := fmt.Sprintf("/tmp/mysql.debug.%d.log", r.Int63());
+	logfile := fmt.Sprintf("/tmp/mysql.debug.%d.log", r.Int63())
 
 	conf.Options.Init()
 
@@ -37,8 +37,8 @@ func (conf *MysqlSlowLog) Execute(args []string) error {
 		conf.Options.ExecStatement("mysql", "SET GLOBAL log_queries_not_using_indexes = 'OFF'")
 	}
 
-	fmt.Println("Starting log tail")
-	fmt.Println("-----------------")
+	Logger.Println("Starting log tail")
+	Logger.Println("-----------------")
 	cmd := shell.Cmd(conf.Options.connection.CommandBuilder("tail", "-n0", "-f", logfile)...)
 	cmd.RunInteractive()
 	return nil

@@ -5,28 +5,27 @@ import (
 	"github.com/webdevops/go-shell"
 )
 
-type MysqlDump struct {
+type MysqlServerRestore struct {
 	Options MysqlCommonOptions `group:"common"`
 	Positional struct {
 		Filename string `description:"Backup filename" required:"1"`
 	} `positional-args:"true"`
 }
 
-func (conf *MysqlDump) Execute(args []string) error {
-	fmt.Println(fmt.Sprintf("Dumping MySQL all schemas to \"%s\"", conf.Positional.Filename))
+func (conf *MysqlServerRestore) Execute(args []string) error {
+	Logger.Main("Restoring MySQL dump \"%s\"", conf.Positional.Filename)
 	conf.Options.Init()
 
-	defer NewSigIntHandler(func() {
-	})()
+	defer NewSigIntHandler(func() {})()
 
 	shell.SetDefaultShell("bash")
 
 	conf.Options.dumpCompression = GetCompressionByFilename(conf.Positional.Filename)
 	if (conf.Options.dumpCompression != "") {
-		fmt.Println(fmt.Sprintf(" - Using %s compression", conf.Options.dumpCompression))
+		Logger.Step("using %s decompression", conf.Options.dumpCompression)
 	}
 
-	cmd := shell.Cmd(conf.Options.MysqlDumpCommandBuilder("--all-databases")...).Pipe(fmt.Sprintf("cat > %s", shell.Quote(conf.Positional.Filename)))
+	cmd := shell.Cmd(fmt.Sprintf("cat %s", shell.Quote(conf.Positional.Filename))).Pipe(conf.Options.MysqlRestoreCommandBuilder()...)
 	cmd.Run()
 
 	return nil

@@ -5,25 +5,24 @@ import (
 	"github.com/webdevops/go-shell"
 )
 
-type PostgresDump struct {
+type PostgresServerDump struct {
 	Options PostgresCommonOptions `group:"common"`
 	Positional struct {
 		Filename string `description:"Backup filename" required:"1"`
 	} `positional-args:"true"`
 }
 
-func (conf *PostgresDump) Execute(args []string) error {
-	fmt.Println(fmt.Sprintf("Dumping PostgreSQL to \"%s\"", conf.Positional.Filename))
+func (conf *PostgresServerDump) Execute(args []string) error {
+	Logger.Main("Dumping PostgreSQL to \"%s\"", conf.Positional.Filename)
 	conf.Options.Init()
 
-	defer NewSigIntHandler(func() {
-	})()
+	defer NewSigIntHandler(func() {})()
 
 	shell.SetDefaultShell("bash")
 
 	conf.Options.dumpCompression = GetCompressionByFilename(conf.Positional.Filename)
 	if (conf.Options.dumpCompression != "") {
-		fmt.Println(fmt.Sprintf(" - Using %s compression", conf.Options.dumpCompression))
+		Logger.Step("using %s compression", conf.Options.dumpCompression)
 	}
 
 	cmd := shell.Cmd(conf.Options.PgDumpAllCommandBuilder()...).Pipe(fmt.Sprintf("cat > %s", shell.Quote(conf.Positional.Filename)))

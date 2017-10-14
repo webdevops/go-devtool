@@ -1,9 +1,9 @@
 package command
 
 import (
+	"fmt"
 	"time"
 	"math/rand"
-	"fmt"
 	"github.com/webdevops/go-shell"
 )
 
@@ -12,10 +12,10 @@ type MysqlDebug struct {
 }
 
 func (conf *MysqlDebug) Execute(args []string) error {
-	fmt.Println("Starting MySQL query log")
+	Logger.Main("Starting MySQL query log")
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	logfile := fmt.Sprintf("/tmp/mysql.debug.%d.log", r.Int63());
+	logfile := fmt.Sprintf("/tmp/mysql.debug.%d.log", r.Int63())
 
 	conf.Options.Init()
 
@@ -27,8 +27,8 @@ func (conf *MysqlDebug) Execute(args []string) error {
 	conf.Options.ExecStatement("mysql", fmt.Sprintf("SET GLOBAL general_log_file = '%s'", logfile))
 	conf.Options.ExecStatement("mysql", "SET GLOBAL general_log = 'ON'")
 
-	fmt.Println("Starting log tail")
-	fmt.Println("-----------------")
+	Logger.Println("Starting log tail")
+	Logger.Println("-----------------")
 	cmd := shell.Cmd(conf.Options.connection.CommandBuilder("tail", "-n0", "-f", logfile)...)
 	cmd.RunInteractive()
 	return nil

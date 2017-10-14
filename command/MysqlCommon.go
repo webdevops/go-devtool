@@ -67,9 +67,11 @@ func mysqlIdentifier(value string) string {
 }
 
 func  (conf *MysqlCommonOptions) Init() {
+	Logger.Step("init connection settings")
+	
 	if conf.SSH != "" {
 		conf.connection.Hostname = conf.SSH
-		fmt.Println(fmt.Sprintf(" - Using ssh connection \"%s\"", conf.SSH))
+		Logger.Item("using ssh connection \"%s\"", conf.SSH)
 	}
 
 	if conf.Docker != "" {
@@ -198,10 +200,11 @@ func (conf *MysqlCommonOptions) ExecQuery(database string, statement string) xml
 	return result
 }
 
-func  (conf *MysqlCommonOptions) GetTableList(schema string) []string {
+func  (conf *MysqlCommonOptions) GetTableList(database string) []string {
 	var ret []string
 
-	output := conf.ExecStatement("mysql", fmt.Sprintf("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %s", mysqlQuote(schema)))
+	sql := fmt.Sprintf("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %s", mysqlQuote(database))
+	output := conf.ExecStatement("mysql", sql)
 
 	scanner := bufio.NewScanner(strings.NewReader(output))
 	for scanner.Scan() {
@@ -220,7 +223,7 @@ func  (conf *MysqlCommonOptions) InitDockerSettings() {
 	connectionClone.Type  = "auto"
 
 	containerId := connectionClone.DockerGetContainerId(containerName)
-	fmt.Println(fmt.Sprintf(" - Using docker container \"%s\"", containerId))
+	Logger.Item("using docker container \"%s\"", containerId)
 
 	containerEnv := connectionClone.DockerGetEnvironment(containerId)
 
@@ -228,21 +231,21 @@ func  (conf *MysqlCommonOptions) InitDockerSettings() {
 		if val, ok := containerEnv["MYSQL_ROOT_PASSWORD"]; ok {
 			// get root pass from env
 			if conf.Username == "" && conf.Password == "" {
-				fmt.Println("   -> using mysql root account (from env:MYSQL_ROOT_PASSWORD)")
+				Logger.Item("using mysql root account (from env:MYSQL_ROOT_PASSWORD)")
 				conf.Username = "root"
 				conf.Password = val
 			}
 		} else if val, ok := containerEnv["MYSQL_ALLOW_EMPTY_PASSWORD"]; ok {
 			// get root without password from env
 			if val == "yes" && conf.Username == "" {
-				fmt.Println("   -> using mysql root account (from env:MYSQL_ALLOW_EMPTY_PASSWORD)")
+				Logger.Item("using mysql root account (from env:MYSQL_ALLOW_EMPTY_PASSWORD)")
 				conf.Username = "root"
 				conf.Password = ""
 			}
 		} else if user, ok := containerEnv["MYSQL_USER"]; ok {
 			if pass, ok := containerEnv["MYSQL_PASSWORD"]; ok {
 				if conf.Username == "" && conf.Password == "" {
-					fmt.Println(fmt.Sprintf("   -> using mysql user account \"%s\" (from env:MYSQL_USER and env:MYSQL_PASSWORD)", user))
+					Logger.Item("using mysql user account \"%s\" (from env:MYSQL_USER and env:MYSQL_PASSWORD)", user)
 					conf.Username = user
 					conf.Password = pass
 				}

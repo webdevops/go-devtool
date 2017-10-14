@@ -5,32 +5,31 @@ import (
 	"github.com/webdevops/go-shell"
 )
 
-type PostgresSchemaRestore struct {
+type PostgresDbRestore struct {
 	Options PostgresCommonOptions `group:"common"`
 	Positional struct {
-		Schema string `description:"Schema" required:"1"`
+		Database string `description:"Database" required:"1"`
 		Filename string `description:"Backup filename" required:"1"`
 	} `positional-args:"true"`
 }
 
-func (conf *PostgresSchemaRestore) Execute(args []string) error {
-	fmt.Println(fmt.Sprintf("Restoring PostgreSQL dump \"%s\" to schema \"%s\"", conf.Positional.Filename, conf.Positional.Schema))
+func (conf *PostgresDbRestore) Execute(args []string) error {
+	Logger.Main("Restoring PostgreSQL dump \"%s\" to database \"%s\"", conf.Positional.Filename, conf.Positional.Database)
 	conf.Options.Init()
 
-	defer NewSigIntHandler(func() {
-	})()
+	defer NewSigIntHandler(func() {})()
 
 	shell.SetDefaultShell("bash")
 
 	conf.Options.dumpCompression = GetCompressionByFilename(conf.Positional.Filename)
 	if (conf.Options.dumpCompression != "") {
-		fmt.Println(fmt.Sprintf(" - Using %s decompression", conf.Options.dumpCompression))
+		Logger.Step("using %s decompression", conf.Options.dumpCompression)
 	}
 
-	conf.Options.ExecStatement(fmt.Sprintf("DROP DATABASE IF EXISTS %s", postgresIdentifier(conf.Positional.Schema)))
-	conf.Options.ExecStatement(fmt.Sprintf("CREATE DATABASE %s", postgresIdentifier(conf.Positional.Schema)))
+	conf.Options.ExecStatement(fmt.Sprintf("DROP DATABASE IF EXISTS %s", postgresIdentifier(conf.Positional.Database)))
+	conf.Options.ExecStatement(fmt.Sprintf("CREATE DATABASE %s", postgresIdentifier(conf.Positional.Database)))
 
-	cmd := shell.Cmd(fmt.Sprintf("cat %s", shell.Quote(conf.Positional.Filename))).Pipe(conf.Options.PostgresRestoreCommandBuilder(conf.Positional.Schema)...)
+	cmd := shell.Cmd(fmt.Sprintf("cat %s", shell.Quote(conf.Positional.Filename))).Pipe(conf.Options.PostgresRestoreCommandBuilder(conf.Positional.Database)...)
 	cmd.Run()
 
 	return nil
