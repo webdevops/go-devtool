@@ -79,10 +79,12 @@ func createArgparser() {
 	argparser.AddCommand("mysql:dump", "MySQL dump instance", "Backup MySQL instance (all databases) to file", &command.MysqlServerDump{})
 	argparser.AddCommand("mysql:restore", "MySQL restore instance", "Restore MySQL instance (all databases) from file", &command.MysqlServerRestore{})
 
+	argparser.AddCommand("mysql:sql", "MySQL dump database", "Run PostgreSQL shell", &command.MysqlSql{})
 	argparser.AddCommand("mysql:db:dump", "MySQL dump database", "Backup MySQL database to file", &command.MysqlDbDump{})
 	argparser.AddCommand("mysql:db:restore", "MySQL restore database", "Restore MySQL database from file", &command.MysqlDbRestore{})
 	argparser.AddCommand("mysql:db:convert", "MySQL convert database charset/collation", "Convert a database to a charset and collation", &command.MysqlConvert{})
 
+	argparser.AddCommand("postgres:sql", "PostgreSQL shell", "Run PostgreSQL shell", &command.PostgresSql{})
 	argparser.AddCommand("postgres:dump", "PostgreSQL dump server", "Backup PostgreSQL database to file", &command.PostgresServerDump{})
 	argparser.AddCommand("postgres:restore", "PostgreSQL restore server", "Restore PostgreSQL instance from file", &command.PostgresServerRestore{})
 	argparser.AddCommand("postgres:db:dump", "PostgreSQL dump database", "Backup PostgreSQL database to file", &command.PostgresDbDump{})

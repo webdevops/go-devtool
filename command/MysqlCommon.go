@@ -80,6 +80,33 @@ func  (conf *MysqlCommonOptions) Init() {
 	}
 }
 
+func (conf *MysqlCommonOptions) MysqlInteractiveCommandBuilder(args ...string) []interface{} {
+	connection := conf.connection.Clone()
+	cmd := []string{""}
+
+	if conf.Hostname != "" {
+		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+	}
+
+	if conf.Port != "" {
+		cmd = append(cmd, shell.Quote("-P" + conf.Port))
+	}
+
+	if conf.Username != "" {
+		cmd = append(cmd, shell.Quote("-u" + conf.Username))
+	}
+
+	if conf.Password != "" {
+		connection.Environment["MYSQL_PWD"] = conf.Password
+	}
+
+	if len(args) > 0 {
+		cmd = append(cmd, args...)
+	}
+
+	return connection.RawCommandBuilder("mysql", cmd...)
+}
+
 func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{} {
 	connection := conf.connection.Clone()
 	cmd := []string{"-NB"}
