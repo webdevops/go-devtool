@@ -11,7 +11,9 @@ type PostgresSql struct {
 }
 
 func (conf *PostgresSql) Execute(args []string) error {
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	defer NewSigIntHandler(func() {})()
 

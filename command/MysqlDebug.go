@@ -13,11 +13,12 @@ type MysqlDebug struct {
 
 func (conf *MysqlDebug) Execute(args []string) error {
 	Logger.Main("Starting MySQL query log")
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	logfile := fmt.Sprintf("/tmp/mysql.debug.%d.log", r.Int63())
-
-	conf.Options.Init()
 
 	defer NewSigIntHandler(func() {
 		Logger.Step("disabling mysql general log")

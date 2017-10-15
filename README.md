@@ -62,17 +62,19 @@ Help Options:
 
 Available commands:
   file:stubs               Create file stubs from list of files
+  mysql:convert            MySQL convert database charset/collation
   mysql:debug              MySQL debug
-  mysql:dump               MySQL dump instance
-  mysql:restore            MySQL restore instance
-  mysql:schema:convert     MySQL convert schema charset/collation
-  mysql:schema:dump        MySQL dump schema
-  mysql:schema:restore     MySQL restore schema
+  mysql:dump               MySQL dump database
+  mysql:restore            MySQL restore database
+  mysql:server:dump        MySQL dump instance
+  mysql:server:restore     MySQL restore instance
   mysql:slowlog            MySQL slow query log
-  postgres:dump            PostgreSQL dump instance
-  postgres:restore         PostgreSQL restore instance
-  postgres:schema:dump     PostgreSQL dump schema
-  postgres:schema:restore  PostgreSQL restore schema
+  mysql:sql                MySQL shell
+  postgres:dump            PostgreSQL dump database
+  postgres:restore         PostgreSQL restore database
+  postgres:server:dump     PostgreSQL dump server
+  postgres:server:restore  PostgreSQL restore server
+  postgres:sql             PostgreSQL shell
   self-update              Self update
   typo3:beuser             TYPO3 create BE user
   typo3:stubs              TYPO3 create file stubs
@@ -117,24 +119,30 @@ MySQL commands
 
 ```bash
 # Dump db1 into db1.sql.gz using local MySQL with user root and password dev
-gdt mysql:schema:dump -u root -p dev db1 db1.sql.gz
+gdt mysql:schema:dump --mysql.user root --mysql.password dev db1 db1.sql.gz
+gdt mysql:schema:dump --mysql mysql://root:dev@localhost db1 db1.sql.gz
 
 # Dump db1 into db1.sql.gz using remote MySQL on host example.com with user root and password dev
-gdt mysql:schema:dump --hostname example.com -u root -p dev db1 db1.sql.gz
+gdt mysql:schema:dump --hostname example.com --mysql.user root --mysql.password dev db1 db1.sql.gz
 
 # Dump db1 into db1.sql.gz using remote MySQL with user root and password dev on host example.com using SSH with user foobar 
 gdt mysql:schema:dump --ssh foobar@example.com -u root -p dev db1 db1.sql.gz
 
+# Dump db1 into db1.sql.gz using docker-compose container mysql
+gdt mysql:schema:dump --docker compose:mysql db1 db1.sql.gz
+
 # Dump db1 into db1.sql.gz using docker container 081e7bfaada1
-gdt mysql:schema:dump --docker=081e7bfaada1 db1 db1.sql.gz
+gdt mysql:schema:dump --docker 081e7bfaada1 db1 db1.sql.gz
 
 # Restore db1 from db1.sql.gz using docker container 081e7bfaada1
-gdt mysql:schema:restore --docker=081e7bfaada1 db1 db1.sql.gz
+gdt mysql:schema:restore --docker 081e7bfaada1 db1 db1.sql.gz
 
 ```
 
 PostgreSQL commands
 -------------------
+
+(same as mysql)
 
 ```bash
 # Dump db1 into db1.sql.gz using docker container 081e7bfaada1

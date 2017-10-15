@@ -14,7 +14,9 @@ type MysqlServerDump struct {
 
 func (conf *MysqlServerDump) Execute(args []string) error {
 	Logger.Main("Dumping MySQL all databases to \"%s\"", conf.Positional.Filename)
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	defer NewSigIntHandler(func() {})()
 

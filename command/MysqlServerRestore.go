@@ -14,7 +14,9 @@ type MysqlServerRestore struct {
 
 func (conf *MysqlServerRestore) Execute(args []string) error {
 	Logger.Main("Restoring MySQL dump \"%s\"", conf.Positional.Filename)
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	defer NewSigIntHandler(func() {})()
 

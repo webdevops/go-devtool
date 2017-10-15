@@ -14,7 +14,9 @@ type PostgresServerRestore struct {
 
 func (conf *PostgresServerRestore) Execute(args []string) error {
 	Logger.Main("Restoring PostgreSQL dump \"%s\"", conf.Positional.Filename)
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	defer NewSigIntHandler(func() {})()
 

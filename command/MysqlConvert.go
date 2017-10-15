@@ -15,7 +15,10 @@ type MysqlConvert struct {
 
 func (conf *MysqlConvert) Execute(args []string) error {
 	Logger.Main("Converting MySQL database \"%s\" to charset \"%s\" and collation \"%s\"", conf.Positional.Database, conf.Charset, conf.Collation)
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
+
 
 	defer NewSigIntHandler(func() {})()
 

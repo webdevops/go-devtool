@@ -35,7 +35,9 @@ type storageFile struct {
 
 func (conf *Typo3Stubs) Execute(args []string) error {
 	Logger.Main("Starting TYPO3 fileadmin stub generator")
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	rootPath, err := conf.GetTypo3Root()
 	if err != nil {

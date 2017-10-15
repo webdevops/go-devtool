@@ -14,7 +14,9 @@ type PostgresServerDump struct {
 
 func (conf *PostgresServerDump) Execute(args []string) error {
 	Logger.Main("Dumping PostgreSQL to \"%s\"", conf.Positional.Filename)
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	defer NewSigIntHandler(func() {})()
 

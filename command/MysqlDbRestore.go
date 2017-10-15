@@ -15,8 +15,9 @@ type MysqlDbRestore struct {
 
 func (conf *MysqlDbRestore) Execute(args []string) error {
 	Logger.Main("Restoring MySQL dump \"%s\" to database \"%s\"", conf.Positional.Filename, conf.Positional.Database)
-
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	defer NewSigIntHandler(func() {})()
 

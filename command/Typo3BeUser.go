@@ -46,7 +46,9 @@ type Typo3BeUser struct {
 
 func (conf *Typo3BeUser) Execute(args []string) error {
 	Logger.Main("Starting TYPO3 BE user generator")
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	userId := "NULL"
 

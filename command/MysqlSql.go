@@ -11,7 +11,9 @@ type MysqlSql struct {
 }
 
 func (conf *MysqlSql) Execute(args []string) error {
-	conf.Options.Init()
+	if err := conf.Options.Init(); err != nil {
+		return err
+	}
 
 	defer NewSigIntHandler(func() {})()
 

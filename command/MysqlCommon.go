@@ -1,23 +1,26 @@
 package command
 
 import (
+	"fmt"
 	"bufio"
+	"errors"
+	"regexp"
 	"strings"
+	"encoding/xml"
 	"github.com/webdevops/go-shell"
 	"github.com/webdevops/go-shell/commandbuilder"
-	"fmt"
-	"regexp"
-	"encoding/xml"
-	"errors"
 )
 
 type MysqlCommonOptions struct {
-	Hostname string `          long:"hostname"`
-	Port     string `short:"P" long:"port"`
-	Username string `short:"u" long:"user"`
-	Password string `short:"p" long:"password"`
-	Docker   string `          long:"docker"`
-	SSH      string `          long:"ssh"`
+	SSH      string `long:"ssh"`
+	Docker   string `long:"docker"`
+	Mysql    string `long:"mysql"`
+	MysqlOptions struct {
+		Hostname string `long:"hostname"`
+		Port     string `long:"port"`
+		Username string `long:"user"`
+		Password string `long:"password"`
+	} `group:"mysql" namespace:"mysql"`
 
 	connection commandbuilder.Connection
 	dumpCompression string
@@ -66,38 +69,71 @@ func mysqlIdentifier(value string) string {
 	return "`" + strings.Replace(value, "`", "\\`", -1) + "`"
 }
 
-func  (conf *MysqlCommonOptions) Init() {
+func  (conf *MysqlCommonOptions) Init() error {
 	Logger.Step("init connection settings")
-	
+
+	// --ssh
 	if conf.SSH != "" {
 		conf.connection.Hostname = conf.SSH
 		Logger.Item("using ssh connection \"%s\"", conf.SSH)
 	}
 
+	// --docker
 	if conf.Docker != "" {
 		conf.connection.Docker = conf.Docker
 		conf.InitDockerSettings()
 	}
+
+	// --mysql
+	// parse DSN/URL value
+	if conf.Mysql != "" {
+		mysqlConf, err := commandbuilder.ParseArgument(conf.Mysql)
+		if err != nil {
+			return err
+		}
+
+		if mysqlConf.Scheme != "mysql" {
+			return errors.New(fmt.Sprintf("Scheme \"%v\" is not allowed, only mysql is supported in --mysql", mysqlConf.Scheme))
+		}
+
+		if mysqlConf.Hostname() != "" {
+			conf.MysqlOptions.Hostname = mysqlConf.Hostname()
+		}
+
+		if mysqlConf.Port() != "" {
+			conf.MysqlOptions.Port = mysqlConf.Port()
+		}
+
+		if mysqlConf.User.Username() != "" {
+			conf.MysqlOptions.Username = mysqlConf.User.Username()
+		}
+
+		if pass, _ := mysqlConf.User.Password(); pass != "" {
+			conf.MysqlOptions.Password = pass
+		}
+	}
+
+	return nil
 }
 
 func (conf *MysqlCommonOptions) MysqlInteractiveCommandBuilder(args ...string) []interface{} {
 	connection := conf.connection.Clone()
 	cmd := []string{""}
 
-	if conf.Hostname != "" {
-		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+	if conf.MysqlOptions.Hostname != "" {
+		cmd = append(cmd, shell.Quote("-h" + conf.MysqlOptions.Hostname))
 	}
 
-	if conf.Port != "" {
-		cmd = append(cmd, shell.Quote("-P" + conf.Port))
+	if conf.MysqlOptions.Port != "" {
+		cmd = append(cmd, shell.Quote("-P" + conf.MysqlOptions.Port))
 	}
 
-	if conf.Username != "" {
-		cmd = append(cmd, shell.Quote("-u" + conf.Username))
+	if conf.MysqlOptions.Username != "" {
+		cmd = append(cmd, shell.Quote("-u" + conf.MysqlOptions.Username))
 	}
 
-	if conf.Password != "" {
-		connection.Environment["MYSQL_PWD"] = conf.Password
+	if conf.MysqlOptions.Password != "" {
+		connection.Environment["MYSQL_PWD"] = conf.MysqlOptions.Password
 	}
 
 	if len(args) > 0 {
@@ -111,20 +147,20 @@ func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{
 	connection := conf.connection.Clone()
 	cmd := []string{"-NB"}
 
-	if conf.Hostname != "" {
-		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+	if conf.MysqlOptions.Hostname != "" {
+		cmd = append(cmd, shell.Quote("-h" + conf.MysqlOptions.Hostname))
 	}
 
-	if conf.Port != "" {
-		cmd = append(cmd, shell.Quote("-P" + conf.Port))
+	if conf.MysqlOptions.Port != "" {
+		cmd = append(cmd, shell.Quote("-P" + conf.MysqlOptions.Port))
 	}
 
-	if conf.Username != "" {
-		cmd = append(cmd, shell.Quote("-u" + conf.Username))
+	if conf.MysqlOptions.Username != "" {
+		cmd = append(cmd, shell.Quote("-u" + conf.MysqlOptions.Username))
 	}
 
-	if conf.Password != "" {
-		connection.Environment["MYSQL_PWD"] = conf.Password
+	if conf.MysqlOptions.Password != "" {
+		connection.Environment["MYSQL_PWD"] = conf.MysqlOptions.Password
 	}
 
 	if len(args) > 0 {
@@ -138,20 +174,20 @@ func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(args ...string) []interf
 	connection := conf.connection.Clone()
 	cmd := []string{"mysqldump", "--single-transaction"}
 
-	if conf.Hostname != "" {
-		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+	if conf.MysqlOptions.Hostname != "" {
+		cmd = append(cmd, shell.Quote("-h" + conf.MysqlOptions.Hostname))
 	}
 
-	if conf.Port != "" {
-		cmd = append(cmd, shell.Quote("-P" + conf.Port))
+	if conf.MysqlOptions.Port != "" {
+		cmd = append(cmd, shell.Quote("-P" + conf.MysqlOptions.Port))
 	}
 
-	if conf.Username != "" {
-		cmd = append(cmd, shell.Quote("-u" + conf.Username))
+	if conf.MysqlOptions.Username != "" {
+		cmd = append(cmd, shell.Quote("-u" + conf.MysqlOptions.Username))
 	}
 
-	if conf.Password != "" {
-		connection.Environment["MYSQL_PWD"] = conf.Password
+	if conf.MysqlOptions.Password != "" {
+		connection.Environment["MYSQL_PWD"] = conf.MysqlOptions.Password
 	}
 
 	if len(args) > 0 {
@@ -185,20 +221,20 @@ func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []int
 
 	cmd = append(cmd, "mysql", "-NB")
 
-	if conf.Hostname != "" {
-		cmd = append(cmd, shell.Quote("-h" + conf.Hostname))
+	if conf.MysqlOptions.Hostname != "" {
+		cmd = append(cmd, shell.Quote("-h" + conf.MysqlOptions.Hostname))
 	}
 
-	if conf.Port != "" {
-		cmd = append(cmd, shell.Quote("-P" + conf.Port))
+	if conf.MysqlOptions.Port != "" {
+		cmd = append(cmd, shell.Quote("-P" + conf.MysqlOptions.Port))
 	}
 
-	if conf.Username != "" {
-		cmd = append(cmd, shell.Quote("-u" + conf.Username))
+	if conf.MysqlOptions.Username != "" {
+		cmd = append(cmd, shell.Quote("-u" + conf.MysqlOptions.Username))
 	}
 
-	if conf.Password != "" {
-		connection.Environment["MYSQL_PWD"] = conf.Password
+	if conf.MysqlOptions.Password != "" {
+		connection.Environment["MYSQL_PWD"] = conf.MysqlOptions.Password
 	}
 
 	if len(args) > 0 {
@@ -254,27 +290,27 @@ func  (conf *MysqlCommonOptions) InitDockerSettings() {
 
 	containerEnv := connectionClone.DockerGetEnvironment(containerId)
 
-	if conf.Username == "" {
+	if conf.MysqlOptions.Username == "" {
 		if val, ok := containerEnv["MYSQL_ROOT_PASSWORD"]; ok {
 			// get root pass from env
-			if conf.Username == "" && conf.Password == "" {
+			if conf.MysqlOptions.Username == "" && conf.MysqlOptions.Password == "" {
 				Logger.Item("using mysql root account (from env:MYSQL_ROOT_PASSWORD)")
-				conf.Username = "root"
-				conf.Password = val
+				conf.MysqlOptions.Username = "root"
+				conf.MysqlOptions.Password = val
 			}
 		} else if val, ok := containerEnv["MYSQL_ALLOW_EMPTY_PASSWORD"]; ok {
 			// get root without password from env
-			if val == "yes" && conf.Username == "" {
+			if val == "yes" && conf.MysqlOptions.Username == "" {
 				Logger.Item("using mysql root account (from env:MYSQL_ALLOW_EMPTY_PASSWORD)")
-				conf.Username = "root"
-				conf.Password = ""
+				conf.MysqlOptions.Username = "root"
+				conf.MysqlOptions.Password = ""
 			}
 		} else if user, ok := containerEnv["MYSQL_USER"]; ok {
 			if pass, ok := containerEnv["MYSQL_PASSWORD"]; ok {
-				if conf.Username == "" && conf.Password == "" {
+				if conf.MysqlOptions.Username == "" && conf.MysqlOptions.Password == "" {
 					Logger.Item("using mysql user account \"%s\" (from env:MYSQL_USER and env:MYSQL_PASSWORD)", user)
-					conf.Username = user
-					conf.Password = pass
+					conf.MysqlOptions.Username = user
+					conf.MysqlOptions.Password = pass
 				}
 			}
 		}
