@@ -34,13 +34,19 @@ func postgresIdentifier(value string) string {
 func  (conf *PostgresCommonOptions) Init() error {
 	Logger.Step("init connection settings")
 
+	// --ssh
 	if conf.SSH != "" {
-		conf.connection.Hostname = conf.SSH
+		if err := conf.connection.SetSsh(conf.SSH); err != nil {
+			return err
+		}
 		Logger.Item("using ssh connection \"%s\"", conf.SSH)
 	}
 
+	// --docker
 	if conf.Docker != "" {
-		conf.connection.Docker = conf.Docker
+		if err := conf.connection.SetDocker(conf.Docker); err != nil {
+			return err
+		}
 		conf.InitDockerSettings()
 	}
 
@@ -56,20 +62,20 @@ func  (conf *PostgresCommonOptions) Init() error {
 			return errors.New(fmt.Sprintf("Scheme \"%v\" is not allowed, only mysql is supported in --mysql", postgresConf.Scheme))
 		}
 
-		if postgresConf.Hostname() != "" {
-			conf.PostgresOptions.Hostname = postgresConf.Hostname()
+		if postgresConf.Hostname != "" {
+			conf.PostgresOptions.Hostname = postgresConf.Hostname
 		}
 
-		if postgresConf.Port() != "" {
-			conf.PostgresOptions.Port = postgresConf.Port()
+		if postgresConf.Port != "" {
+			conf.PostgresOptions.Port = postgresConf.Port
 		}
 
-		if postgresConf.User.Username() != "" {
-			conf.PostgresOptions.Username = postgresConf.User.Username()
+		if postgresConf.Username != "" {
+			conf.PostgresOptions.Username = postgresConf.Username
 		}
 
-		if pass, _ := postgresConf.User.Password(); pass != "" {
-			conf.PostgresOptions.Password = pass
+		if postgresConf.Password != "" {
+			conf.PostgresOptions.Username = postgresConf.Password
 		}
 	}
 
@@ -219,16 +225,12 @@ func (conf *PostgresCommonOptions) ExecStatement(statement string) string {
 }
 
 func  (conf *PostgresCommonOptions) InitDockerSettings() {
-	containerName := conf.connection.Docker
+	conn := conf.connection
 
-	connectionClone := conf.connection.Clone()
-	connectionClone.Docker = ""
-	connectionClone.Type  = "auto"
-
-	containerId := connectionClone.DockerGetContainerId(containerName)
+	containerId := conn.DockerGetContainerId()
 	Logger.Item("using docker container \"%s\"", containerId)
 
-	containerEnv := connectionClone.DockerGetEnvironment(containerId)
+	containerEnv := conn.DockerGetEnvironment()
 
 	// try to guess user/password
 	if conf.PostgresOptions.Username == "" {

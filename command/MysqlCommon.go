@@ -74,13 +74,17 @@ func  (conf *MysqlCommonOptions) Init() error {
 
 	// --ssh
 	if conf.SSH != "" {
-		conf.connection.Hostname = conf.SSH
+		if err := conf.connection.SetSsh(conf.SSH); err != nil {
+			return err
+		}
 		Logger.Item("using ssh connection \"%s\"", conf.SSH)
 	}
 
 	// --docker
 	if conf.Docker != "" {
-		conf.connection.Docker = conf.Docker
+		if err := conf.connection.SetDocker(conf.Docker); err != nil {
+			return err
+		}
 		conf.InitDockerSettings()
 	}
 
@@ -96,20 +100,20 @@ func  (conf *MysqlCommonOptions) Init() error {
 			return errors.New(fmt.Sprintf("Scheme \"%v\" is not allowed, only mysql is supported in --mysql", mysqlConf.Scheme))
 		}
 
-		if mysqlConf.Hostname() != "" {
-			conf.MysqlOptions.Hostname = mysqlConf.Hostname()
+		if mysqlConf.Hostname != "" {
+			conf.MysqlOptions.Hostname = mysqlConf.Hostname
 		}
 
-		if mysqlConf.Port() != "" {
-			conf.MysqlOptions.Port = mysqlConf.Port()
+		if mysqlConf.Port != "" {
+			conf.MysqlOptions.Port = mysqlConf.Port
 		}
 
-		if mysqlConf.User.Username() != "" {
-			conf.MysqlOptions.Username = mysqlConf.User.Username()
+		if mysqlConf.Username != "" {
+			conf.MysqlOptions.Username = mysqlConf.Username
 		}
 
-		if pass, _ := mysqlConf.User.Password(); pass != "" {
-			conf.MysqlOptions.Password = pass
+		if mysqlConf.Password != "" {
+			conf.MysqlOptions.Password = mysqlConf.Password
 		}
 	}
 
@@ -279,16 +283,12 @@ func  (conf *MysqlCommonOptions) GetTableList(database string) []string {
 }
 
 func  (conf *MysqlCommonOptions) InitDockerSettings() {
-	containerName := conf.connection.Docker
+	conn := conf.connection
 
-	connectionClone := conf.connection.Clone()
-	connectionClone.Docker = ""
-	connectionClone.Type  = "auto"
-
-	containerId := connectionClone.DockerGetContainerId(containerName)
+	containerId := conn.DockerGetContainerId()
 	Logger.Item("using docker container \"%s\"", containerId)
 
-	containerEnv := connectionClone.DockerGetEnvironment(containerId)
+	containerEnv := conn.DockerGetEnvironment()
 
 	if conf.MysqlOptions.Username == "" {
 		if val, ok := containerEnv["MYSQL_ROOT_PASSWORD"]; ok {
