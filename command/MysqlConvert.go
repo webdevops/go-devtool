@@ -9,8 +9,8 @@ type MysqlConvert struct {
 	Positional struct {
 		Database string `description:"Database" required:"true"`
 	} `positional-args:"true"`
-	Charset   string           `long:"charset"      description:"MySQL charset"               default:"utf8"`
-	Collation string           `long:"collation"    description:"MySQL collation"             default:"utf8_general_ci"`
+	Charset   string           `long:"charset"      description:"MySQL charset"               default:"utf8mb4"`
+	Collation string           `long:"collation"    description:"MySQL collation"             default:"utf8mb4_unicode_ci"`
 }
 
 func (conf *MysqlConvert) Execute(args []string) error {
