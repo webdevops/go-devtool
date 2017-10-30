@@ -1,11 +1,11 @@
 package command
 
 import (
+	"fmt"
+	"errors"
 	"strings"
 	"github.com/webdevops/go-shell"
 	"github.com/webdevops/go-shell/commandbuilder"
-	"fmt"
-	"errors"
 )
 
 type PostgresCommonOptions struct {
@@ -101,7 +101,7 @@ func (conf *PostgresCommonOptions) PsqlCommandBuilder(args ...string) []interfac
 	}
 
 	if conf.PostgresOptions.Password != "" {
-		connection.Environment["PGPASSWORD"] = conf.PostgresOptions.Password
+		connection.Environment.Set("PGPASSWORD", conf.PostgresOptions.Password)
 	}
 
 	if len(args) > 0 {
@@ -130,7 +130,7 @@ func (conf *PostgresCommonOptions) PgDumpCommandBuilder(database string) []inter
 	}
 
 	if conf.PostgresOptions.Password != "" {
-		connection.Environment["PGPASSWORD"] = conf.PostgresOptions.Password
+		connection.Environment.Set("PGPASSWORD", conf.PostgresOptions.Password)
 	}
 
 	cmd = append(cmd, shell.Quote(database))
@@ -166,7 +166,7 @@ func (conf *PostgresCommonOptions) PgDumpAllCommandBuilder() []interface{} {
 	}
 
 	if conf.PostgresOptions.Password != "" {
-		connection.Environment["PGPASSWORD"] = conf.PostgresOptions.Password
+		connection.Environment.Set("PGPASSWORD", conf.PostgresOptions.Password)
 	}
 
 	switch conf.dumpCompression {
@@ -209,7 +209,7 @@ func (conf *PostgresCommonOptions) PostgresRestoreCommandBuilder(args ...string)
 	}
 
 	if conf.PostgresOptions.Password != "" {
-		connection.Environment["PGPASSWORD"] = conf.PostgresOptions.Password
+		connection.Environment.Set("PGPASSWORD", conf.PostgresOptions.Password)
 	}
 
 	if len(args) > 0 {

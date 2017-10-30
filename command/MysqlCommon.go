@@ -137,7 +137,7 @@ func (conf *MysqlCommonOptions) MysqlInteractiveCommandBuilder(args ...string) [
 	}
 
 	if conf.MysqlOptions.Password != "" {
-		connection.Environment["MYSQL_PWD"] = conf.MysqlOptions.Password
+		connection.Environment.Set("MYSQL_PWD", conf.MysqlOptions.Password)
 	}
 
 	if len(args) > 0 {
@@ -164,7 +164,7 @@ func (conf *MysqlCommonOptions) MysqlCommandBuilder(args ...string) []interface{
 	}
 
 	if conf.MysqlOptions.Password != "" {
-		connection.Environment["MYSQL_PWD"] = conf.MysqlOptions.Password
+		connection.Environment.Set("MYSQL_PWD", conf.MysqlOptions.Password)
 	}
 
 	if len(args) > 0 {
@@ -191,7 +191,7 @@ func (conf *MysqlCommonOptions) MysqlDumpCommandBuilder(args ...string) []interf
 	}
 
 	if conf.MysqlOptions.Password != "" {
-		connection.Environment["MYSQL_PWD"] = conf.MysqlOptions.Password
+		connection.Environment.Set("MYSQL_PWD", conf.MysqlOptions.Password)
 	}
 
 	if len(args) > 0 {
@@ -238,7 +238,7 @@ func (conf *MysqlCommonOptions) MysqlRestoreCommandBuilder(args ...string) []int
 	}
 
 	if conf.MysqlOptions.Password != "" {
-		connection.Environment["MYSQL_PWD"] = conf.MysqlOptions.Password
+		connection.Environment.Set("MYSQL_PWD", conf.MysqlOptions.Password)
 	}
 
 	if len(args) > 0 {
