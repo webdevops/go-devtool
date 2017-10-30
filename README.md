@@ -39,7 +39,7 @@ Install
 The binary file can be found in the [project releases](https://github.com/webdevops/go-devtool/releases).
 
 ```
-DOWNLOAD_VERSION=0.3.3
+DOWNLOAD_VERSION=0.4.0
 DOWNLOAD_OS=linux
 DOWNLOAD_ARCH=x64
 
@@ -123,10 +123,10 @@ gdt mysql:schema:dump --mysql.user root --mysql.password dev db1 db1.sql.gz
 gdt mysql:schema:dump --mysql mysql://root:dev@localhost db1 db1.sql.gz
 
 # Dump db1 into db1.sql.gz using remote MySQL on host example.com with user root and password dev
-gdt mysql:schema:dump --hostname example.com --mysql.user root --mysql.password dev db1 db1.sql.gz
+gdt mysql:schema:dump --mysql.hostname example.com --mysql.user root --mysql.password dev db1 db1.sql.gz
 
 # Dump db1 into db1.sql.gz using remote MySQL with user root and password dev on host example.com using SSH with user foobar 
-gdt mysql:schema:dump --ssh foobar@example.com -u root -p dev db1 db1.sql.gz
+gdt mysql:schema:dump --ssh foobar@example.com --mysql.user root --mysql.password dev db1 db1.sql.gz
 
 # Dump db1 into db1.sql.gz using docker-compose container mysql
 gdt mysql:schema:dump --docker compose:mysql db1 db1.sql.gz

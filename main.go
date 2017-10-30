@@ -16,7 +16,7 @@ const (
 	// application informations
 	Name    = "godevtool"
 	Author  = "webdevops.io"
-	Version = "0.3.3"
+	Version = "0.4.0"
 
 	// self update informations
 	GithubOrganization  = "webdevops"
